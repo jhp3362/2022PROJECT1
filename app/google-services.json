@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "539596763723",
+    "project_id": "zole-8ba29",
+    "storage_bucket": "zole-8ba29.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:539596763723:android:e99933cec8e63ba42e93ce",
+        "android_client_info": {
+          "package_name": "com.example.zolp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "539596763723-ehom8792kfe3df1hdej74eed4nav5slc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.zolp",
+            "certificate_hash": "b68d1d03bf3c79b74f7abf77ba60cb61e00d9cc3"
+          }
+        },
+        {
+          "client_id": "539596763723-7l3l3fri97miuo4tu8dvtnovlppuqika.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeOhwrZ9Chvx9FaZ5NAYp5IDTCft1YFZg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "539596763723-7l3l3fri97miuo4tu8dvtnovlppuqika.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
