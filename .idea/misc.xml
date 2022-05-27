@@ -5,6 +5,8 @@
       <map>
         <entry key="..\:/me/olP/app/src/main/res/drawable/ic_menu_camera.xml" value="0.198" />
         <entry key="..\:/me/olP/app/src/main/res/layout/activity_main.xml" value="0.16286727456940223" />
+        <entry key="..\:/me/olP/app/src/main/res/layout/fragment_join.xml" value="0.1671875" />
+        <entry key="..\:/me/olP/app/src/main/res/layout/fragment_login.xml" value="0.1671875" />
         <entry key="..\:/me/olP/app/src/main/res/layout/fragment_main.xml" value="0.16286727456940223" />
         <entry key="..\:/me/olP/app/src/main/res/layout/fragment_main2.xml" value="0.16286727456940223" />
       </map>
