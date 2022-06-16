@@ -102,7 +102,6 @@ public class JoinFragment extends Fragment {
     };
 
     private void joinBtnClick(String id, String pw, String name){
-
         if(id.equals("")){
             Toast.makeText(getContext(), "아이디를 입력해주세요!", Toast.LENGTH_SHORT).show();
         }

@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+ImageListFragment.java
+fragment_image_list.xml

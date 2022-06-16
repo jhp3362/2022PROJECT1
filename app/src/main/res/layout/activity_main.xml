@@ -44,11 +44,6 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_content_main"
-        android:name="com.example.zolp.LoginFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    <include layout="@layout/content_main" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
