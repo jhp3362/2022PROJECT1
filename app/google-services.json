@@ -1,41 +1,33 @@
 {
   "project_info": {
-    "project_number": "539596763723",
-    "project_id": "zole-8ba29",
-    "storage_bucket": "zole-8ba29.appspot.com"
+    "project_number": "779960011422",
+    "project_id": "zolp-f02eb",
+    "storage_bucket": "zolp-f02eb.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:539596763723:android:e99933cec8e63ba42e93ce",
+        "mobilesdk_app_id": "1:779960011422:android:533ce5428873ddaa8f498f",
         "android_client_info": {
           "package_name": "com.example.zolp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "539596763723-ehom8792kfe3df1hdej74eed4nav5slc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.zolp",
-            "certificate_hash": "b68d1d03bf3c79b74f7abf77ba60cb61e00d9cc3"
-          }
-        },
-        {
-          "client_id": "539596763723-7l3l3fri97miuo4tu8dvtnovlppuqika.apps.googleusercontent.com",
+          "client_id": "779960011422-df9v8f43sqeeh77mbuk67p4asri2t2n2.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDeOhwrZ9Chvx9FaZ5NAYp5IDTCft1YFZg"
+          "current_key": "AIzaSyDnFEd3zutqkNNJ-SSyc8ln2RUjTEOANS4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "539596763723-7l3l3fri97miuo4tu8dvtnovlppuqika.apps.googleusercontent.com",
+              "client_id": "779960011422-df9v8f43sqeeh77mbuk67p4asri2t2n2.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
