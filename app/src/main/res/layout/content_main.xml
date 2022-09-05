@@ -5,10 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@drawable/background"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_content_main"
-        android:name="com.example.zolp.LoginFragment"
+        android:name="com.example.zolp.MainFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

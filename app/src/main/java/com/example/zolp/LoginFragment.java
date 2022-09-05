@@ -2,12 +2,6 @@ package com.example.zolp;
 
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +9,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 
 
 public class LoginFragment extends Fragment {
@@ -27,26 +24,25 @@ public class LoginFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         main = (MainActivity)getActivity();
-
+        BackPressHandler handler = new BackPressHandler(main);
+        OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                handler.onBackPressed();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
-        if(main.mAuth.getCurrentUser()!=null){
-            main.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_content_main, new MainFragment()).commit();
-        }
-        main.userView.setVisibility(View.INVISIBLE);
-        main.toolbar.setTitle("로그인");
         View rootView = inflater.inflate(R.layout.fragment_login, container, false);
-        EditText loginId = rootView.findViewById(R.id.login_Id);
-        EditText loginPw = rootView.findViewById(R.id.login_Pw);
-        Button joinBtn = rootView.findViewById(R.id.join_Btn);
-        Button loginBtn = rootView.findViewById(R.id.login_Btn);
-
-
+        EditText loginId = rootView.findViewById(R.id.login_id);
+        EditText loginPw = rootView.findViewById(R.id.login_pw);
+        Button joinBtn = rootView.findViewById(R.id.join_btn);
+        Button loginBtn = rootView.findViewById(R.id.login_btn);
 
         joinBtn.setOnClickListener(new View.OnClickListener() {
             @Override

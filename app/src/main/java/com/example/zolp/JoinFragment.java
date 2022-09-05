@@ -3,14 +3,8 @@ package com.example.zolp;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +13,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
 
@@ -49,11 +44,11 @@ public class JoinFragment extends Fragment {
 
         main.toolbar.setTitle("회원가입");
 
-        Button joinBtn = rootView.findViewById(R.id.join_Btn);
-        EditText joinId = rootView.findViewById(R.id.join_Id);
-        joinName = rootView.findViewById(R.id.join_Name);
-        joinPw = rootView.findViewById(R.id.join_Pw);
-        joinPwCheck = rootView.findViewById(R.id.join_Pwcheck);
+        Button joinBtn = rootView.findViewById(R.id.join_btn);
+        EditText joinId = rootView.findViewById(R.id.join_id);
+        joinName = rootView.findViewById(R.id.join_name);
+        joinPw = rootView.findViewById(R.id.join_pw);
+        joinPwCheck = rootView.findViewById(R.id.join_pwcheck);
         pwChecker = rootView.findViewById(R.id.pwChecker);
 
         //password check
@@ -67,6 +62,8 @@ public class JoinFragment extends Fragment {
                 joinBtnClick(joinId.getText().toString(), joinPw.getText().toString(), joinName.getText().toString());
             }
         });
+
+
         return rootView;
     }
 

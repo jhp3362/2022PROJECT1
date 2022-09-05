@@ -6,21 +6,22 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/button_Camera"
-        android:layout_width="match_parent"
+        android:id="@+id/button_camera"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="200dp"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:layout_marginTop="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="114dp"
-            android:src="@drawable/ic_menu_camera" />
+            android:layout_gravity="center"
+            android:src="@drawable/set1_camera" />
 
         <TextView
             android:id="@+id/textView"
@@ -33,21 +34,22 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/button_Interest"
-        android:layout_width="match_parent"
+        android:id="@+id/button_interest"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="72dp"
         android:layout_weight="1"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_Camera">
+        app:layout_constraintTop_toBottomOf="@id/button_camera">
 
         <ImageView
             android:id="@+id/imageView2"
-            android:layout_width="match_parent"
+            android:layout_width="200dp"
             android:layout_height="114dp"
-            android:src="@drawable/ic_menu_gallery" />
+            android:layout_gravity="center"
+            android:src="@drawable/set1_restaurant" />
 
         <TextView
             android:id="@+id/textView2"
