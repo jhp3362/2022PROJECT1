@@ -6,12 +6,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -53,13 +55,15 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Transaction;
-import com.google.firebase.ml.vision.FirebaseVision;
-import com.google.firebase.ml.vision.common.FirebaseVisionImage;
-import com.google.firebase.ml.vision.label.FirebaseVisionImageLabel;
-import com.google.firebase.ml.vision.label.FirebaseVisionImageLabeler;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.mlkit.common.model.LocalModel;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.label.ImageLabel;
+import com.google.mlkit.vision.label.ImageLabeler;
+import com.google.mlkit.vision.label.ImageLabeling;
+import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -96,7 +100,11 @@ public class AfterCaptureFragment extends Fragment {
             imageFile = (File) bundle.getSerializable("imageFile");
             ImageView imageView = rootView.findViewById(R.id.capture_image);
             imageView.setImageURI(imageUri);
-            imageLabeling();
+            try {
+                labelImage();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             user = main.mAuth.getCurrentUser();
             storage = FirebaseStorage.getInstance();
@@ -355,36 +363,38 @@ public class AfterCaptureFragment extends Fragment {
     }
 
 
-    private void imageLabeling() {
-        FirebaseVisionImage fbImage;
-        FirebaseVisionImageLabeler labeler = FirebaseVision.getInstance().getOnDeviceImageLabeler();
+    private void labelImage() throws IOException {
+        LocalModel localModel =
+                new LocalModel.Builder()
+                        .setAssetFilePath("model.tflite")
+                        // .setAbsoluteFilePath("%USERPROFILE%/Source/AndroidStudio/2022PROJECT1/app/src/main/assets/model.tflite")
+                        // or .setUri(URI to model file)
+                        .build();
 
-        try {
-            fbImage = FirebaseVisionImage.fromFilePath(getContext(), imageUri); // 이미지 uri를 가지고 fbimage로 변환
+        CustomImageLabelerOptions customImageLabelerOptions =
+                new CustomImageLabelerOptions.Builder(localModel)
+                        .setConfidenceThreshold(0)
+                        .setMaxResultCount(5)
+                        .build();
+        ImageLabeler labeler = ImageLabeling.getClient(customImageLabelerOptions);
 
-            labeler.processImage(fbImage)
-                    .addOnSuccessListener(new OnSuccessListener<List<FirebaseVisionImageLabel>>() {
-                        @Override
-                        public void onSuccess(List<FirebaseVisionImageLabel> labels) {
-                            // Task completed successfully
-                            for (FirebaseVisionImageLabel label: labels) {
-                                float confidence = label.getConfidence();
-                                if(confidence < 0.8) break;
-                                String text = label.getText();
-                                System.out.println(text);
-                            }
+
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), imageUri);
+        Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
+        InputImage image = InputImage.fromBitmap(resized, 0);
+
+        labeler.process(image)
+                .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
+                    @Override
+                    public void onSuccess(List<ImageLabel> labels) {
+                        for (ImageLabel label : labels) {
+                            String text = label.getText();
+                            System.out.println(text);
+                            // label 출력까지
                         }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            // Task failed with an exception
-                            // ...
-                        }
-                    });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                        // label 번역하기
+                    }
+                });
     }
 
     private final ActivityResultLauncher<IntentSenderRequest> locationLauncher = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(),
@@ -418,6 +428,7 @@ public class AfterCaptureFragment extends Fragment {
                 }
             }
     );
+
 
     private final ActivityResultLauncher<Intent> locationSettingLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
