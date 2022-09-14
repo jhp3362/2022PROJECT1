@@ -58,7 +58,12 @@ import com.google.firebase.firestore.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.mlkit.common.model.DownloadConditions;
 import com.google.mlkit.common.model.LocalModel;
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
@@ -67,6 +72,7 @@ import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -83,6 +89,7 @@ public class AfterCaptureFragment extends Fragment {
     private MainActivity main;
     private FirebaseUser user;
     private Boolean doneDB = false, doneStorage = false, doneSetting = false;
+    private String translatedLabel;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -241,7 +248,7 @@ public class AfterCaptureFragment extends Fragment {
                             image.put("imageName", storageImageName);
                             image.put("location", addressStr);
                             //image.put("date", Date.)
-                            //image.put("keywords", )
+                            image.put("keywords", translatedLabel);
                             DocumentReference docRef = db.collection("users").document(user.getUid());
                             db.runTransaction(new Transaction.Function<Void>() {
                                 @Nullable
@@ -362,7 +369,27 @@ public class AfterCaptureFragment extends Fragment {
         });
     }
 
+    private void translateLabel(final Translator englishKoreanTranslator, List<String> Labels) {
+        List<String> translatedLabels = new ArrayList<>();
 
+        englishKoreanTranslator.translate(Labels.get(0))
+                .addOnSuccessListener(
+                        new OnSuccessListener() {
+                            @Override
+                            public void onSuccess(Object translatedText) {
+                                translatedLabel = translatedText.toString();
+                            }
+
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Error.
+                                // ...
+                            }
+                        });
+    }
     private void labelImage() throws IOException {
         LocalModel localModel =
                 new LocalModel.Builder()
@@ -383,18 +410,46 @@ public class AfterCaptureFragment extends Fragment {
         Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
         InputImage image = InputImage.fromBitmap(resized, 0);
 
+        List<String> Labels = new ArrayList<>();
         labeler.process(image)
                 .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
                     @Override
                     public void onSuccess(List<ImageLabel> labels) {
                         for (ImageLabel label : labels) {
                             String text = label.getText();
-                            System.out.println(text);
-                            // label 출력까지
+                            Labels.add(text);
                         }
-                        // label 번역하기
                     }
                 });
+
+        TranslatorOptions options =
+                new TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.ENGLISH)
+                        .setTargetLanguage(TranslateLanguage.KOREAN)
+                        .build();
+        final Translator englishKoreanTranslator =
+                Translation.getClient(options);
+
+
+        DownloadConditions conditions = new DownloadConditions.Builder()
+                .requireWifi()
+                .build();
+        englishKoreanTranslator.downloadModelIfNeeded(conditions)
+                .addOnSuccessListener(
+                        new OnSuccessListener() {
+                            @Override
+                            public void onSuccess(Object o) {
+                                translateLabel(englishKoreanTranslator, Labels);
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Model couldn’t be downloaded or other internal error.
+                                // ...
+                            }
+                        });
     }
 
     private final ActivityResultLauncher<IntentSenderRequest> locationLauncher = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(),
