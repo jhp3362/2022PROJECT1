@@ -20,6 +20,14 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
     public FirebaseAuth mAuth;
     private TextView userName;
@@ -29,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isMenuOpened = false;
     private Animation downMenu, upMenu;
     public boolean inGallery = false;
+    private ArrayList<RestaurantInfo> list = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
 
     }
 
