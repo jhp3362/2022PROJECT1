@@ -73,6 +73,7 @@ import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -216,15 +217,15 @@ public class AfterCaptureFragment extends Fragment {
     }
 
     private void saveAtFBDB() {
-        if (!checkLocationPermission()) return;
-        LocationRequest locationRequest = LocationRequest.create();
+        if (!checkLocationPermission()) return;         //권한 없을 시 함수 종료
+        LocationRequest locationRequest = LocationRequest.create();     //위치 정보 설정 과정
         locationRequest.setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest).setAlwaysShow(false);
         SettingsClient settingsClient = LocationServices.getSettingsClient(getContext());
         settingsClient.checkLocationSettings(builder.build()).addOnSuccessListener(new OnSuccessListener<LocationSettingsResponse>() {
             @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {      //위치 정보 가져오기 성공
                 if (ContextCompat.checkSelfPermission(main, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         ContextCompat.checkSelfPermission(main, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return;
 
@@ -247,17 +248,21 @@ public class AfterCaptureFragment extends Fragment {
                             Map<String,Object> image = new HashMap<>();
                             image.put("imageName", storageImageName);
                             image.put("location", addressStr);
-                            //image.put("date", Date.)
+                            image.put("date", new Date());
                             image.put("keywords", translatedLabel);
                             DocumentReference docRef = db.collection("users").document(user.getUid());
                             db.runTransaction(new Transaction.Function<Void>() {
                                 @Nullable
                                 @Override
                                 public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                                    DocumentReference locationRef = docRef.collection("locations").document(addressStr);
+                                    DocumentReference locationRef = docRef.collection("locations").document(addressStr); //DB locations 폴더에 주소 문서 생성
                                     DocumentSnapshot snapshot = transaction.get(locationRef);
                                     Object count = snapshot.get("imageCount");
-                                    if(count==null) {
+                                    DocumentReference keywordRef = docRef.collection("keywords").document(translatedLabel);  //DB keywords 폴더에 키워드 문서 생성
+                                    DocumentSnapshot snapshot2 = transaction.get(keywordRef);
+                                    Object count2 = snapshot2.get("imageCount");
+
+                                    if(count==null) {       //새로 생성된 문서면 image 개수 1 아니면 기존 개수+1
                                         Map<String, Integer> newCount = new HashMap<>();
                                         newCount.put("imageCount", 1);
                                         transaction.set(locationRef, newCount);
@@ -265,7 +270,17 @@ public class AfterCaptureFragment extends Fragment {
                                     else {
                                         transaction.update(locationRef, "imageCount", FieldValue.increment(1));
                                     }
-                                    transaction.set(docRef.collection("images").document(), image);
+
+                                    if(count2==null) {
+                                        Map<String, Integer> newCount = new HashMap<>();
+                                        newCount.put("imageCount", 1);
+                                        transaction.set(keywordRef, newCount);
+                                    }
+                                    else {
+                                        transaction.update(keywordRef, "imageCount", FieldValue.increment(1));
+                                    }
+                                    transaction.set(docRef.collection("images").document(), image);     //DB images 폴더에 사진 정보 문서 생성
+
                                     return null;
                                 }
                             }).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -281,14 +296,13 @@ public class AfterCaptureFragment extends Fragment {
                             }).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    if(doneStorage && !doneSetting){
+                                    if(doneStorage && !doneSetting){          //스토리지 저장 끝& 설정창 킨 상태X 라면 화면 전환
                                         Toast.makeText(getContext(), "서버 저장 성공", Toast.LENGTH_SHORT).show();
                                         if(imageFile.delete()){
                                             imageFile = null;
                                             imageUri = null;
                                         }
                                         main.onBackPressed();
-                                        Log.d("aaaaaaaaa","hihihihihihhih22");
                                     }
                                 }
                             });
@@ -341,11 +355,32 @@ public class AfterCaptureFragment extends Fragment {
         Map<String,Object> image = new HashMap<>();
         image.put("imageName", storageImageName);
         image.put("location", "null");
+        image.put("date", new Date());
+        image.put("keywords", translatedLabel);
 
-        db.collection("users").document(user.getUid())
-                .collection("images").add(image).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+
+        DocumentReference docRef = db.collection("users").document(user.getUid());
+        db.runTransaction(new Transaction.Function<Void>() {
+            @Nullable
             @Override
-            public void onSuccess(DocumentReference documentReference) {
+            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                docRef.collection("images").add(image);  //DB images 폴더 문서 생성
+                DocumentReference keywordRef = docRef.collection("keywords").document(translatedLabel);  //DB keywords 폴더에 키워드 문서 생성
+                DocumentSnapshot snapshot = transaction.get(keywordRef);
+                Object count = snapshot.get("imageCount");
+                if(count==null) {
+                    Map<String, Integer> newCount = new HashMap<>();
+                    newCount.put("imageCount", 1);
+                    transaction.set(keywordRef, newCount);
+                }
+                else {
+                    transaction.update(keywordRef, "imageCount", FieldValue.increment(1));
+                }
+                return null;
+            }
+        }).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
                 doneDB = true;
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -353,20 +388,20 @@ public class AfterCaptureFragment extends Fragment {
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getContext(), "서버 저장 오류", Toast.LENGTH_SHORT).show();
             }
-        }).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+        }).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void onComplete(@NonNull Task<DocumentReference> task) {
+            public void onComplete(@NonNull Task<Void> task) {
                 if(doneStorage && !doneSetting){
                     Toast.makeText(getContext(), "서버 저장 성공", Toast.LENGTH_SHORT).show();
                     if(imageFile.delete()){
                         imageFile = null;
                         imageUri = null;
                     }
-                    Log.d("aaaaaaaaa","hihihihihihhih11");
                     main.onBackPressed();
                 }
             }
         });
+
     }
 
     private void translateLabel(final Translator englishKoreanTranslator, List<String> Labels) {
@@ -411,16 +446,7 @@ public class AfterCaptureFragment extends Fragment {
         InputImage image = InputImage.fromBitmap(resized, 0);
 
         List<String> Labels = new ArrayList<>();
-        labeler.process(image)
-                .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
-                    @Override
-                    public void onSuccess(List<ImageLabel> labels) {
-                        for (ImageLabel label : labels) {
-                            String text = label.getText();
-                            Labels.add(text);
-                        }
-                    }
-                });
+
 
         TranslatorOptions options =
                 new TranslatorOptions.Builder()
@@ -439,7 +465,17 @@ public class AfterCaptureFragment extends Fragment {
                         new OnSuccessListener() {
                             @Override
                             public void onSuccess(Object o) {
-                                translateLabel(englishKoreanTranslator, Labels);
+                                labeler.process(image)
+                                    .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
+                                        @Override
+                                        public void onSuccess(List<ImageLabel> labels) {
+                                            for (ImageLabel label : labels) {
+                                                String text = label.getText();
+                                                Labels.add(text);
+                                            }
+                                            translateLabel(englishKoreanTranslator, Labels);
+                                        }
+                                    });
                             }
                         })
                 .addOnFailureListener(
