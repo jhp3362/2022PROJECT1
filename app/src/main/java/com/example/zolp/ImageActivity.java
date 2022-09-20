@@ -41,38 +41,30 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class ImageActivity extends AppCompatActivity {
-    private File imageFile;
     private ViewPager2 pager;
     private StorageReference storageRef;
     private DocumentReference docRef;
-    private FirebaseUser user;
     private ArrayList<Uri> uriList;
-    private ArrayList<String> nameList;
     private ArrayList<ImageInfo> infoList;
     private ImageAdapter adapter;
     private boolean isRemoved = false;
-    private ArrayList<Integer> removedIndexes = new ArrayList<>();
+    private final ArrayList<Integer> removedIndexes = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image);
 
-        user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if(user != null){
             makeLoginAlert();
         }
         storageRef = FirebaseStorage.getInstance().getReference().child(user.getUid());
         docRef = FirebaseFirestore.getInstance().collection("users").document(user.getUid());
-        /*byte[] byteArray = getIntent().getByteArrayExtra("image");
-        Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0 , byteArray.length);
-        ImageView imageView = findViewById(R.id.image);
-        imageView.setImageBitmap(bitmap);*/
 
         pager = findViewById(R.id.pager);
         Intent intent = getIntent();
         int index = intent.getIntExtra("index", 0);
         uriList = intent.getParcelableArrayListExtra("uriList");
-        nameList = intent.getStringArrayListExtra("nameList");
         infoList = intent.getParcelableArrayListExtra("infoList");
 
         adapter = new ImageAdapter(getBaseContext(), uriList);
@@ -102,7 +94,7 @@ public class ImageActivity extends AppCompatActivity {
     private void saveInGallery(){
         ImageView imageView = pager.findViewWithTag(pager.getCurrentItem());
         try {
-            imageFile = setImageFile();
+            File imageFile = setImageFile();
             FileOutputStream stream = new FileOutputStream(imageFile);
             Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
@@ -148,7 +140,6 @@ public class ImageActivity extends AppCompatActivity {
                                                 int removedIdx = pager.getCurrentItem();
                                                 removedIndexes.add(removedIdx);
                                                 adapter.destroyItem(removedIdx);
-                                                nameList.remove(removedIdx);
                                                 infoList.remove(removedIdx);
 
                                                 if(adapter.getItemCount()==0){
@@ -163,7 +154,8 @@ public class ImageActivity extends AppCompatActivity {
                                                 }
                                                 DocumentReference locationRef = docRef.collection("locations").document(document.getString("location"));
                                                 locationRef.update("imageCount", FieldValue.increment(-1));
-
+                                                DocumentReference keywordRef = docRef.collection("keywords").document(document.getString("keywords"));
+                                                keywordRef.update("imageCount", FieldValue.increment(-1));
                                             }
                                         });
                                     }
@@ -188,7 +180,7 @@ public class ImageActivity extends AppCompatActivity {
         builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String name = nameList.get(pager.getCurrentItem());
+                String name = infoList.get(pager.getCurrentItem()).getName();
                 deleteImage(name);
             }
         });
@@ -212,6 +204,9 @@ public class ImageActivity extends AppCompatActivity {
 
     @Override
     public void supportFinishAfterTransition() {
+        pager.setTransitionName("");
+        int index = pager.getCurrentItem();
+        pager.findViewWithTag(index).setTransitionName("trans"+index);
         Intent intent = new Intent();
         if(isRemoved) {
             setResult(RESULT_CANCELED, intent);
@@ -220,6 +215,7 @@ public class ImageActivity extends AppCompatActivity {
         else {
             setResult(RESULT_OK, intent);
         }
+
         super.supportFinishAfterTransition();
     }
 }

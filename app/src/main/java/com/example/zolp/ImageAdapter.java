@@ -4,13 +4,13 @@ import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.zolp.databinding.ViewImageBinding;
+import com.github.chrisbanes.photoview.PhotoView;
 
 import java.util.ArrayList;
 
@@ -48,7 +48,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
+        PhotoView imageView;
         public ViewHolder(ViewImageBinding binding) {
             super(binding.getRoot());
             imageView = binding.image;

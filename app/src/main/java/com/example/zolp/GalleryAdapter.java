@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,17 +18,23 @@ import com.example.zolp.databinding.GalleryItemBinding;
 import java.util.ArrayList;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
-    private Context context;
-    private final ArrayList<Uri> uriList;
-    private final ArrayList<String> nameList;
+    private final Context context;
+    private ArrayList<Uri> uriList;
+    private ArrayList<ImageInfo> infoList;
     private OnItemClickListener listener;
+    private Pair<View, String>[] pairs;
 
 
-    public GalleryAdapter(Context context, ArrayList<Uri> uriList, ArrayList<String> nameList) {
+    public GalleryAdapter(Context context) {
         this.context = context;
-        this.uriList = uriList;
-        this.nameList = nameList;
     }
+
+    public void setList(ArrayList<Uri> uriList, ArrayList<ImageInfo> infoList) {
+        this.uriList = uriList;
+        this.infoList = infoList;
+        pairs = new Pair[uriList.size()];
+    }
+
 
     @NonNull
     @Override
@@ -39,9 +46,14 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Uri uri = uriList.get(position);
         holder.setImageView(uri);
+        holder.imageView.setTag(position);
         ViewCompat.setTransitionName(holder.imageView,"trans"+position);
+        pairs[position] = Pair.create(holder.imageView, "trans"+position);
     }
 
+    public Pair<View, String>[] getPairs() {
+        return pairs;
+    }
 
     @Override
     public long getItemId(int position) {
@@ -76,46 +88,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
         }
     }
 
-    public void addItem(Uri uri, String name){
-        uriList.add(uri);
-        nameList.add(name);
-    }
-
     public void destroyItem(int position){
         uriList.remove(position);
-        nameList.remove(position);
+        infoList.remove(position);
     }
-    /*@Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        if(convertView == null) {
-            Log.d("aaaaaaaaaa","안녕");
-            convertView = inflater.inflate(R.layout.gallery_item, parent, false);
-        }Log.d("aaaaaaaaaa","안녕2");
-        ImageView imageView = convertView.findViewById(R.id.imageView);
-        Glide.with(context).load(list.get(position)).into(imageView);
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, ImageActivity.class);
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-
-                byte[] byteArray = stream.toByteArray();
-                intent.putExtra("index", position);
-                intent.putExtra("image", byteArray);
-                intent.putParcelableArrayListExtra("list", list);
-                context.startActivity(intent);
-            }
-        });
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.itemClick(v, position);
-            }
-        });
-        return convertView;
-    }*/
 
 }

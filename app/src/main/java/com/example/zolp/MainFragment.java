@@ -109,7 +109,7 @@ public class MainFragment extends Fragment {
 
 
     private File setImageFile() throws IOException { // 파일 생성
-        String timestamp = new SimpleDateFormat("yyyyMMddhhmmss", java.util.Locale.getDefault()).format(new Date());
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault()).format(new Date());
         String fileName = "zolp_" + timestamp;
 
         File imageDir = requireContext().getCacheDir();

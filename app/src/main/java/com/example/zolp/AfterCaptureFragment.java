@@ -89,7 +89,7 @@ public class AfterCaptureFragment extends Fragment {
     private File imageFile;
     private MainActivity main;
     private FirebaseUser user;
-    private Boolean doneDB = false, doneStorage = false, doneSetting = false;
+    private Boolean doneDB = false, doneStorage = false;
     private String translatedLabel;
     @Override
     public void onAttach(@NonNull Context context) {
@@ -164,7 +164,7 @@ public class AfterCaptureFragment extends Fragment {
         }).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if(doneDB && !doneSetting){
+                if(doneDB){
                     Toast.makeText(getContext(), "서버 저장 성공", Toast.LENGTH_SHORT).show();
                     if(imageFile.delete()){
                         imageFile = null;
@@ -207,7 +207,6 @@ public class AfterCaptureFragment extends Fragment {
         builder.setNegativeButton("위치 권한 허용", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                doneSetting = true;
                 Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
                 locationSettingLauncher.launch(intent);
             }
@@ -296,7 +295,7 @@ public class AfterCaptureFragment extends Fragment {
                             }).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    if(doneStorage && !doneSetting){          //스토리지 저장 끝& 설정창 킨 상태X 라면 화면 전환
+                                    if(doneStorage){          //스토리지 저장도 끝났다면 화면 전환
                                         Toast.makeText(getContext(), "서버 저장 성공", Toast.LENGTH_SHORT).show();
                                         if(imageFile.delete()){
                                             imageFile = null;
@@ -391,7 +390,7 @@ public class AfterCaptureFragment extends Fragment {
         }).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if(doneStorage && !doneSetting){
+                if(doneStorage ){
                     Toast.makeText(getContext(), "서버 저장 성공", Toast.LENGTH_SHORT).show();
                     if(imageFile.delete()){
                         imageFile = null;
@@ -525,7 +524,6 @@ public class AfterCaptureFragment extends Fragment {
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
-                    doneSetting = false;
                     if(ContextCompat.checkSelfPermission(main, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                             ContextCompat.checkSelfPermission(main, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                         saveAtFBDB();

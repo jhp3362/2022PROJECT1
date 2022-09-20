@@ -54,6 +54,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'
     implementation 'com.google.android.gms:play-services-location:20.0.0'
     implementation 'com.google.mlkit:translate:17.0.1'
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 }
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
