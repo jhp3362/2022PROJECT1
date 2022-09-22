@@ -14,14 +14,15 @@ import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.Iterator;
 
 public class ItemFragment extends Fragment {
 
@@ -37,7 +38,7 @@ public class ItemFragment extends Fragment {
         }.start();
 
         try {
-            Thread.sleep(1000); // 크롤링 하는 동안 원래 쓰레드는 잠시 대기. 이부분 콜백함수로 개선 필요함
+            Thread.sleep(3000); // 크롤링 하는 동안 원래 쓰레드는 잠시 대기. 이부분 콜백함수로 개선 필요함
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -86,20 +87,35 @@ public class ItemFragment extends Fragment {
             String target = "파스타";
 
             Document document = Jsoup.connect(URL + location + " " + target).get();
-            Element div = document.getElementById("_pcmap_list_scroll_container");
-            Elements lists = div.getElementsByClass("UEzoS rTjJo");
+            String rawScript = document.getElementsByTag("script").get(2).toString();
+            int start = rawScript.indexOf("window.__APOLLO_STATE__ = ") + "window.__APOLLO_STATE__ = ".length();
+            int end = rawScript.indexOf("window.__PLACE_STATE__") - ";\n          ".length();
 
-            for (Element l : lists) {
-                String placeName = l.getElementsByClass("place_bluelink").html();
-                String placeRating = l.getElementsByTag("em").html();
-//                String imageTag = l.getElementsByClass("K0PDV").toString();
-//                int startofUrl = imageTag.indexOf("http://");
-//                int endofUrl = imageTag.indexOf(".jpg");
-//                String imageUrl = imageTag.substring(startofUrl, endofUrl + 3);
-                RestaurantInfo info = new RestaurantInfo(0, placeName, "imageUrl", location, "010-1111-1111", "https://www.naver.com", new String[]{"파스타", "피자"});
-                list.add(info);
+            String script = rawScript.substring(start, end);
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(script);
+
+            Iterator iter = jsonObject.keySet().iterator();
+            
+            int i = 0;
+            while (iter.hasNext() && i < 5) {
+                String key = (String) iter.next();
+                if (key.contains("RestaurantListSummary")) {
+                    JSONObject value = (JSONObject) jsonObject.get(key);
+                    assert value != null;
+                    String name = (String) value.get("name");
+                    String category = (String) value.get("category");
+                    String address = (String) value.get("fullAddress");
+                    String phone = (String) value.get("phone");
+                    String imageUrl = (String) value.get("imageUrl");
+                    String routeUrl = (String) value.get("routeUrl");
+                    String visitorReviewScore = (String) value.get("visitorReviewScore");
+                    list.add(new RestaurantInfo(0, name, imageUrl, address, phone, routeUrl, new String[]{target}));
+                    i++;
+                }
             }
-        } catch (IOException e) {
+
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }
