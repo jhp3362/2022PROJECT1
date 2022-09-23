@@ -1,8 +1,7 @@
 package com.example.zolp;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +9,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.zolp.databinding.FragmentItemViewBinding;
 
+import java.net.URI;
 import java.util.ArrayList;
 
 
@@ -19,14 +22,14 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
 
     private final ArrayList<RestaurantInfo> mValues;
     private OnItemClickListener listener;
-
+    private Context context;
     public RecommendViewAdapter(ArrayList<RestaurantInfo> items) {
         mValues = items;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
+        context = parent.getContext();
         return new ViewHolder(FragmentItemViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
 
     }
@@ -42,11 +45,11 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         return mValues.size();
     }
 
-    public RestaurantInfo getItem(int position){
+    public RestaurantInfo getItem(int position) {
         return mValues.get(position);
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener){
+    public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
@@ -79,16 +82,18 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         }
 
         @SuppressLint("ResourceAsColor")
-        public void setViews(RestaurantInfo info){
+        public void setViews(RestaurantInfo info) {
             id = info.id;
             name.setText(info.name);
-            keywords.setText(info.keywords.toString());
+            keywords.setText(info.keywords.toString());     // Restaurant의 keywords는 String[]
             location.setText(info.location);
             phoneNumber.setText(info.phoneNumber);
-            imageView.setBackgroundColor(R.color.purple_200);
+
+//            imageView.setBackgroundColor(R.color.purple_200);
+            Glide.with(context).load(info.imageUrl).into(imageView);
         }
 
-        public void setOnItemClickListener(OnItemClickListener listener){
+        public void setOnItemClickListener(OnItemClickListener listener) {
             this.listener = listener;
         }
 

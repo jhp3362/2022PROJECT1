@@ -38,7 +38,7 @@ public class ItemFragment extends Fragment {
         }.start();
 
         try {
-            Thread.sleep(3000); // 크롤링 하는 동안 원래 쓰레드는 잠시 대기. 이부분 콜백함수로 개선 필요함
+            Thread.sleep(5000); // 크롤링 하는 동안 원래 쓰레드는 잠시 대기. 이부분 콜백함수로 개선 필요함
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -79,7 +79,7 @@ public class ItemFragment extends Fragment {
         return view;
     }
 
-    private synchronized void GetRestaurantList() {
+    private void GetRestaurantList() {
         try {
             String URL = "https://pcmap.place.naver.com/restaurant/list?query=";
 
