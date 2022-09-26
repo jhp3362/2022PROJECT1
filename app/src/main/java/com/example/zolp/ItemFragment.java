@@ -14,6 +14,14 @@ import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -25,29 +33,64 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class ItemFragment extends Fragment {
+    private String location, target;
+    private boolean getLocationDone = false, getKeywordDone = false;
+    private ViewPager2 pager;
+    private RecommendViewAdapter adapter;
 
     private final ArrayList<RestaurantInfo> list = new ArrayList<RestaurantInfo>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        new Thread() {
-            public void run() {
-                GetRestaurantList();
-            }
-        }.start();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DocumentReference docRef = FirebaseFirestore.getInstance().collection("users")
+                .document(user.getUid());
+        docRef.collection("locations")
+                .orderBy("imageCount", Query.Direction.DESCENDING)   //가장 많이 방문한 지역 1위 가져오기
+                .limit(1)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if(!queryDocumentSnapshots.isEmpty()) { //데이터 존재
+                            location = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        }
+                        else{       //데이터 없으면 일단 비우기. 나중에 따로 메시지 띄울 필요
+                            location = "";
+                        }
+                        getLocationDone = true;
+                        if(getKeywordDone){     //키워드 가져오기도 끝났으면 크롤링. 안 끝났으면 밑 리스너에서 크롤링 실행.
+                            openNewThread();
+                        }
+                    }
+                });
+        docRef.collection("keywords")
+                .orderBy("imageCount", Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if(!queryDocumentSnapshots.isEmpty()) {
+                            target = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        }
+                        else{
+                            target = "";
+                        }
+                        getKeywordDone = true;
+                        if(getLocationDone){
+                            openNewThread();
+                        }
+                    }
+                });
 
-        try {
-            Thread.sleep(5000); // 크롤링 하는 동안 원래 쓰레드는 잠시 대기. 이부분 콜백함수로 개선 필요함
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
-        ViewPager2 pager = view.findViewById(R.id.view_pager);
+        pager = view.findViewById(R.id.view_pager);
 
-        RecommendViewAdapter adapter = new RecommendViewAdapter(list);
+        adapter = new RecommendViewAdapter(list);
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void itemClick(View view, int position) {
@@ -79,12 +122,24 @@ public class ItemFragment extends Fragment {
         return view;
     }
 
+    private void openNewThread(){
+        new Thread() {
+            @Override
+            public void run() {
+                GetRestaurantList();
+            }
+        }.start();
+        try {
+            Thread.sleep(2000); // 크롤링 하는 동안 원래 쓰레드는 잠시 대기. 이부분 콜백함수로 개선 필요함
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        pager.setAdapter(adapter);      //크롤링 끝나면 viewpager 업데이트
+    }
+
     private void GetRestaurantList() {
         try {
             String URL = "https://pcmap.place.naver.com/restaurant/list?query=";
-
-            String location = "홍대";
-            String target = "파스타";
 
             Document document = Jsoup.connect(URL + location + " " + target).get();
             String rawScript = document.getElementsByTag("script").get(2).toString();
@@ -110,7 +165,8 @@ public class ItemFragment extends Fragment {
                     String imageUrl = (String) value.get("imageUrl");
                     String routeUrl = (String) value.get("routeUrl");
                     String visitorReviewScore = (String) value.get("visitorReviewScore");
-                    list.add(new RestaurantInfo(0, name, imageUrl, address, phone, routeUrl, new String[]{target}));
+                    //list 대신 adapter로 직접 정보 전달
+                    adapter.addItems(new RestaurantInfo(0, name, imageUrl, address, phone, routeUrl, new String[]{target}));
                     i++;
                 }
             }

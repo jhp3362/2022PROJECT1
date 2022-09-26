@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.zolp.databinding.FragmentItemViewBinding;
 
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdapter.ViewHolder> {
@@ -53,6 +53,9 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         this.listener = listener;
     }
 
+    public void addItems(RestaurantInfo info){
+        mValues.add(info);
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView name;
@@ -85,7 +88,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         public void setViews(RestaurantInfo info) {
             id = info.id;
             name.setText(info.name);
-            keywords.setText(info.keywords.toString());     // Restaurant의 keywords는 String[]
+            keywords.setText(Arrays.toString(info.keywords));     // Restaurant의 keywords는 String[]
             location.setText(info.location);
             phoneNumber.setText(info.phoneNumber);
 

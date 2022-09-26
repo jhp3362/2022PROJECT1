@@ -56,8 +56,6 @@ dependencies {
     implementation 'com.google.mlkit:translate:17.0.1'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation(group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1') { exclude group: 'org.hamcrest', module: 'hamcrest-core' }
-    implementation 'com.github.bumptech.glide:glide:4.9.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
  
 
 }
