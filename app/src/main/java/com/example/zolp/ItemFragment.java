@@ -122,14 +122,15 @@ public class ItemFragment extends Fragment {
     }
 
     private void openNewThread() {
-        new Thread() {
-            @Override
-            public void run() {
-                GetRestaurantList();
-            }
-        }.start();
         try {
-            Thread.sleep(2000); // 크롤링 하는 동안 원래 쓰레드는 잠시 대기. 이부분 콜백함수로 개선 필요함
+            Thread scrappingThread = new Thread() {
+                @Override
+                public void run() {
+                    GetRestaurantList();
+                }
+            };
+            scrappingThread.start();
+            scrappingThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
