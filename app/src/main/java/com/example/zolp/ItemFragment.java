@@ -30,6 +30,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
 public class ItemFragment extends Fragment {
@@ -53,14 +54,13 @@ public class ItemFragment extends Fragment {
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if(!queryDocumentSnapshots.isEmpty()) { //데이터 존재
+                        if (!queryDocumentSnapshots.isEmpty()) { //데이터 존재
                             location = queryDocumentSnapshots.getDocuments().get(0).getId();
-                        }
-                        else{       //데이터 없으면 일단 비우기. 나중에 따로 메시지 띄울 필요
+                        } else {       //데이터 없으면 일단 비우기. 나중에 따로 메시지 띄울 필요
                             location = "";
                         }
                         getLocationDone = true;
-                        if(getKeywordDone){     //키워드 가져오기도 끝났으면 크롤링. 안 끝났으면 밑 리스너에서 크롤링 실행.
+                        if (getKeywordDone) {     //키워드 가져오기도 끝났으면 크롤링. 안 끝났으면 밑 리스너에서 크롤링 실행.
                             openNewThread();
                         }
                     }
@@ -72,14 +72,13 @@ public class ItemFragment extends Fragment {
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if(!queryDocumentSnapshots.isEmpty()) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
                             target = queryDocumentSnapshots.getDocuments().get(0).getId();
-                        }
-                        else{
+                        } else {
                             target = "";
                         }
                         getKeywordDone = true;
-                        if(getLocationDone){
+                        if (getLocationDone) {
                             openNewThread();
                         }
                     }
@@ -122,7 +121,7 @@ public class ItemFragment extends Fragment {
         return view;
     }
 
-    private void openNewThread(){
+    private void openNewThread() {
         new Thread() {
             @Override
             public void run() {
@@ -151,26 +150,29 @@ public class ItemFragment extends Fragment {
             JSONObject jsonObject = (JSONObject) jsonParser.parse(script);
 
             Iterator iter = jsonObject.keySet().iterator();
-            
-            int i = 0;
-            while (iter.hasNext() && i < 5) {
+            ArrayList<JSONObject> jsonObjectsList = new ArrayList<>();
+
+            while (iter.hasNext()) {
                 String key = (String) iter.next();
                 if (key.contains("RestaurantListSummary")) {
                     JSONObject value = (JSONObject) jsonObject.get(key);
-                    assert value != null;
-                    String name = (String) value.get("name");
-                    String category = (String) value.get("category");
-                    String address = (String) value.get("fullAddress");
-                    String phone = (String) value.get("phone");
-                    String imageUrl = (String) value.get("imageUrl");
-                    String routeUrl = (String) value.get("routeUrl");
-                    String visitorReviewScore = (String) value.get("visitorReviewScore");
-                    //list 대신 adapter로 직접 정보 전달
-                    adapter.addItems(new RestaurantInfo(0, name, imageUrl, address, phone, routeUrl, new String[]{target}));
-                    i++;
+                    jsonObjectsList.add(value);
                 }
             }
+            Collections.shuffle(jsonObjectsList);
 
+            for (int i = 0; i < jsonObjectsList.size(); i++) {
+                JSONObject value = jsonObjectsList.get(i);
+                String name = (String) value.get("name");
+                String category = (String) value.get("category");
+                String address = (String) value.get("fullAddress");
+                String phone = (String) value.get("phone");
+                String imageUrl = (String) value.get("imageUrl");
+                String routeUrl = (String) value.get("routeUrl");
+                String visitorReviewScore = (String) value.get("visitorReviewScore");
+                //list 대신 adapter로 직접 정보 전달
+                adapter.addItems(new RestaurantInfo(0, name, imageUrl, address, phone, routeUrl, new String[]{target}));
+            }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
