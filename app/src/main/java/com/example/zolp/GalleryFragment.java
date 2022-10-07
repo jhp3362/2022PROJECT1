@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,7 +70,7 @@ public class GalleryFragment extends Fragment {
 
 
         FirebaseFirestore.getInstance().collection("users").document(user.getUid())
-                .collection("images").orderBy("date").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() { //DB에서 사진 정보 가져오기(위치, Storage에 저장된 이름)
+                .collection("images").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() { //DB에서 사진 정보 가져오기(위치, Storage에 저장된 이름)
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
@@ -80,8 +81,10 @@ public class GalleryFragment extends Fragment {
                         final int[] index = {0};
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String location = document.getString("location");
-                            String imageName = document.getString("imageName");
-                            infoList.add(new ImageInfo(location, imageName));
+                            String imageName = document.getId();
+                            String keyword = document.getString("keywords");
+                            float rating = Objects.requireNonNull(document.getDouble("rating")).floatValue();
+                            infoList.add(new ImageInfo(location,imageName,keyword,rating));
                             FirebaseStorage.getInstance().getReference().child(user.getUid())
                                     .child(Objects.requireNonNull(imageName))  //DB에 저장된 파일명으로 storage에서 이미지 가져오기
                                     .getDownloadUrl()
@@ -115,8 +118,8 @@ public class GalleryFragment extends Fragment {
             public void itemClick(View view, int position) {
                 Intent intent = new Intent(getContext(), ImageActivity.class);
                 intent.putExtra("index", position);
-                intent.putParcelableArrayListExtra("uriList", uriList);
-                intent.putParcelableArrayListExtra("infoList", infoList);
+                intent.putParcelableArrayListExtra("uriList", adapter.getUriList());
+                intent.putParcelableArrayListExtra("infoList", adapter.getInfoList());
                 imageLauncher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), adapter.getPairs()));
             }
         });
@@ -131,13 +134,19 @@ public class GalleryFragment extends Fragment {
                     if(result.getData()!=null) {
                         if(result.getResultCode()==RESULT_CANCELED){
                             ArrayList<Integer> removedIndexes = result.getData().getIntegerArrayListExtra("removedIndexes");
-                            for (int i : removedIndexes){
-                                adapter.destroyItem(i);
+                            if (removedIndexes != null) {
+                                for (int i : removedIndexes) {
+                                    adapter.destroyItem(i);
+                                }
                             }
-                            if (infoList.size() == 0) {
-                                noImageLayout.setVisibility(View.VISIBLE);
+                            if(result.getData().getParcelableArrayListExtra("infoList") != null){
+                                infoList = result.getData().getParcelableArrayListExtra("infoList");
+                                adapter.setInfoList(infoList);
                             }
                             recyclerView.setAdapter(adapter);
+                            if (adapter.getItemCount() == 0) {
+                                noImageLayout.setVisibility(View.VISIBLE);
+                            }
                         }
                     }
                 }

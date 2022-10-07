@@ -14,10 +14,30 @@
         android:layout_margin="40dp"
         tools:src="@tools:sample/avatars" />
 
+    <TextView
+        android:id="@+id/keyword_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="TextView"
+        android:textSize="24sp"
+        android:layout_marginBottom="10dp"/>
+
+    <RatingBar
+        android:id="@+id/rating_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:numStars="5"
+        android:stepSize="0.5"
+        android:isIndicator="false"
+        android:progressTint="#F44336" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="20dp"
         android:orientation="horizontal">
 
         <Button

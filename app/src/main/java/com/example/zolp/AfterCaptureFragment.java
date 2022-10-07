@@ -21,6 +21,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -91,6 +93,8 @@ public class AfterCaptureFragment extends Fragment {
     private FirebaseUser user;
     private Boolean doneDB = false, doneStorage = false;
     private String translatedLabel;
+    private TextView keywordView;
+    private RatingBar ratingBar;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -140,6 +144,8 @@ public class AfterCaptureFragment extends Fragment {
                     main.onBackPressed();
                 }
             });
+            ratingBar = rootView.findViewById(R.id.rating_bar);
+            keywordView = rootView.findViewById(R.id.keyword_view);
         }
 
         return rootView;
@@ -245,10 +251,10 @@ public class AfterCaptureFragment extends Fragment {
 
                             String addressStr = createAddressString(address);
                             Map<String,Object> image = new HashMap<>();
-                            image.put("imageName", storageImageName);
                             image.put("location", addressStr);
                             image.put("date", new Date());
                             image.put("keywords", translatedLabel);
+                            image.put("rating", ratingBar.getRating());
                             DocumentReference docRef = db.collection("users").document(user.getUid());
                             db.runTransaction(new Transaction.Function<Void>() {
                                 @Nullable
@@ -278,7 +284,7 @@ public class AfterCaptureFragment extends Fragment {
                                     else {
                                         transaction.update(keywordRef, "imageCount", FieldValue.increment(1));
                                     }
-                                    transaction.set(docRef.collection("images").document(), image);     //DB images 폴더에 사진 정보 문서 생성
+                                    transaction.set(docRef.collection("images").document(storageImageName), image);     //DB images 폴더에 사진 정보 문서 생성
 
                                     return null;
                                 }
@@ -352,10 +358,10 @@ public class AfterCaptureFragment extends Fragment {
 
     public void saveAtFBDBnoLocation(){
         Map<String,Object> image = new HashMap<>();
-        image.put("imageName", storageImageName);
         image.put("location", "null");
         image.put("date", new Date());
         image.put("keywords", translatedLabel);
+        image.put("rating", ratingBar.getRating());
 
 
         DocumentReference docRef = db.collection("users").document(user.getUid());
@@ -363,7 +369,7 @@ public class AfterCaptureFragment extends Fragment {
             @Nullable
             @Override
             public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                docRef.collection("images").add(image);  //DB images 폴더 문서 생성
+                docRef.collection("images").document(storageImageName).set(image);  //DB images 폴더 문서 생성
                 DocumentReference keywordRef = docRef.collection("keywords").document(translatedLabel);  //DB keywords 폴더에 키워드 문서 생성
                 DocumentSnapshot snapshot = transaction.get(keywordRef);
                 Object count = snapshot.get("imageCount");
@@ -404,14 +410,13 @@ public class AfterCaptureFragment extends Fragment {
     }
 
     private void translateLabel(final Translator englishKoreanTranslator, List<String> Labels) {
-        List<String> translatedLabels = new ArrayList<>();
-
         englishKoreanTranslator.translate(Labels.get(0))
                 .addOnSuccessListener(
                         new OnSuccessListener() {
                             @Override
                             public void onSuccess(Object translatedText) {
                                 translatedLabel = translatedText.toString();
+                                keywordView.setText("키워드 : " + translatedLabel);
                             }
 
                         })

@@ -27,7 +27,7 @@
             android:layout_marginBottom="10dp"
             android:gravity="center"
             android:text="restaurant"
-            android:textSize="50sp" />
+            android:textSize="28sp" />
 
         <TextView
             android:id="@+id/keywords"

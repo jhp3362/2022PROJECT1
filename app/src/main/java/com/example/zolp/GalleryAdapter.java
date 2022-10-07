@@ -35,6 +35,18 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
         pairs = new Pair[uriList.size()];
     }
 
+    public void setInfoList(ArrayList<ImageInfo> infoList){
+        this.infoList = infoList;
+    }
+
+    public ArrayList<Uri> getUriList() {
+        return uriList;
+    }
+
+    public ArrayList<ImageInfo> getInfoList() {
+        return infoList;
+    }
+
 
     @NonNull
     @Override

@@ -8,9 +8,13 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -47,8 +51,9 @@ public class ImageActivity extends AppCompatActivity {
     private ArrayList<Uri> uriList;
     private ArrayList<ImageInfo> infoList;
     private ImageAdapter adapter;
-    private boolean isRemoved = false;
+    private boolean isRemoved = false, isRatingChanged = false;
     private final ArrayList<Integer> removedIndexes = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +79,18 @@ public class ImageActivity extends AppCompatActivity {
         pager.setPageTransformer(new MarginPageTransformer(40));
         pager.setTransitionName("trans"+index);
 
+
+        TextView ratingTxt = findViewById(R.id.rating_txt);
+        setRatingTxt(ratingTxt, infoList.get(index).getRating());   //선택 이미지에 따른 점수 표시
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {  //페이지 넘길때마다 이미지별 점수 표시
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                float rating = infoList.get(position).getRating();
+                setRatingTxt(ratingTxt, rating);
+            }
+        });
+
         Button saveBtn = findViewById(R.id.save_btn);
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +106,51 @@ public class ImageActivity extends AppCompatActivity {
                 makeDeleteAlert();
             }
         });
+
+        LinearLayout ratingLayout = findViewById(R.id.rating_layout);
+        RatingBar ratingBar = findViewById(R.id.rating_bar);
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                if(rating < 0.5F){
+                    ratingBar.setRating(0.5F);   //최소 별점 0.5
+                }
+            }
+        });
+
+        LinearLayout ratingView = findViewById(R.id.rating_view);
+        ratingView.setOnClickListener(new View.OnClickListener() {      //평점 입력창 띄우기
+            @Override
+            public void onClick(View v) {
+                ratingLayout.setVisibility(View.VISIBLE);
+                ratingLayout.bringToFront();
+
+                int index = pager.getCurrentItem();
+                float rating = infoList.get(index).getRating();
+                if(rating == 0){
+                    rating = 5;
+                }
+                ratingBar.setRating(rating);
+            }
+        });
+        TextView okBtn = findViewById(R.id.ok_btn);
+        okBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                float rating = ratingBar.getRating();
+                submitNewRating(rating);
+                ratingLayout.setVisibility(View.INVISIBLE);
+                ratingTxt.setText(String.valueOf(rating));
+            }
+        });
+        TextView cancelBtn = findViewById(R.id.cancel_btn);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ratingLayout.setVisibility(View.INVISIBLE);
+            }
+        });
+
     }
 
     private void saveInGallery(){
@@ -125,41 +187,41 @@ public class ImageActivity extends AppCompatActivity {
         imagesRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                docRef.collection("images").whereEqualTo("imageName", name).get()
-                        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                docRef.collection("images").document(name).get()
+                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                 if (task.isSuccessful()) {
-                                    for (DocumentSnapshot document : task.getResult().getDocuments()) {
-                                        document.getReference().delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void unused) {
-                                                Toast.makeText(getBaseContext(),"삭제 완료" ,Toast.LENGTH_SHORT).show();
+                                    DocumentSnapshot document = task.getResult();
+                                    document.getReference().delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+                                            Toast.makeText(getBaseContext(),"삭제 완료" ,Toast.LENGTH_SHORT).show();
 
-                                                isRemoved = true;
-                                                int removedIdx = pager.getCurrentItem();
-                                                removedIndexes.add(removedIdx);
-                                                adapter.destroyItem(removedIdx);
-                                                infoList.remove(removedIdx);
+                                            isRemoved = true;
+                                            int removedIdx = pager.getCurrentItem();
+                                            removedIndexes.add(removedIdx);
+                                            adapter.destroyItem(removedIdx);
+                                            infoList.remove(removedIdx);
 
-                                                if(adapter.getItemCount()==0){
-                                                    supportFinishAfterTransition();
-                                                }
-                                                pager.setAdapter(adapter);
-                                                if(removedIdx==adapter.getItemCount()) {
-                                                    pager.setCurrentItem(removedIdx-1, false);
-                                                }
-                                                else{
-                                                    pager.setCurrentItem(removedIdx, false);
-                                                }
-                                                DocumentReference locationRef = docRef.collection("locations").document(document.getString("location"));
-                                                locationRef.update("imageCount", FieldValue.increment(-1));
-                                                DocumentReference keywordRef = docRef.collection("keywords").document(document.getString("keywords"));
-                                                keywordRef.update("imageCount", FieldValue.increment(-1));
+                                            if(adapter.getItemCount()==0){
+                                                supportFinishAfterTransition();
                                             }
-                                        });
-                                    }
-                                } else {
+                                            pager.setAdapter(adapter);
+                                            if(removedIdx==adapter.getItemCount()) {
+                                                pager.setCurrentItem(removedIdx-1, false);
+                                            }
+                                            else{
+                                                pager.setCurrentItem(removedIdx, false);
+                                            }
+                                            DocumentReference locationRef = docRef.collection("locations").document(document.getString("location"));
+                                            locationRef.update("imageCount", FieldValue.increment(-1));
+                                            DocumentReference keywordRef = docRef.collection("keywords").document(document.getString("keywords"));
+                                            keywordRef.update("imageCount", FieldValue.increment(-1));
+                                        }
+                                    });
+                                }
+                                else {
                                     Toast.makeText(getBaseContext(),"실패" ,Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -194,6 +256,40 @@ public class ImageActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private void setRatingTxt(TextView ratingTxt, float rating){
+        Log.d("rating", String.valueOf(rating));
+        if(rating == 0){
+            ratingTxt.setText("별점입력");
+        }
+        else{
+            ratingTxt.setText(String.valueOf(rating));
+        }
+    }
+
+    private void submitNewRating(float newRating){
+        int index = pager.getCurrentItem();
+        float oldRating = infoList.get(index).getRating();
+        if(newRating != oldRating){                 //기존 별점과 다르면 DB에 새로 저장
+            String imageName = infoList.get(index).getName();
+            docRef.collection("images").document(imageName).update("rating", newRating)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void unused) {
+                            Toast.makeText(getBaseContext(),"별점 등록 완료" ,Toast.LENGTH_SHORT).show();
+                            infoList.get(index).setRating(newRating);
+                            isRatingChanged = true;
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(getBaseContext(),"오류" ,Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    });
+
+        }
+    }
+
     private void makeLoginAlert(){
 
     }
@@ -215,6 +311,11 @@ public class ImageActivity extends AppCompatActivity {
         else {
             setResult(RESULT_OK, intent);
         }
+        if(isRatingChanged) {
+            setResult(RESULT_CANCELED, intent);
+            intent.putParcelableArrayListExtra("infoList", infoList);
+        }
+
 
         super.supportFinishAfterTransition();
     }
