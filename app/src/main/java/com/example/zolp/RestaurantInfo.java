@@ -1,11 +1,11 @@
 package com.example.zolp;
 
 public class RestaurantInfo {
-    public String name, imageUrl, location, phoneNumber, webUrl;
+    public String id, name, imageUrl, location, phoneNumber, webUrl;
     public String[] keywords;
-    int id;
+    public Boolean isFavorites;
 
-    public RestaurantInfo(int id, String name, String imageUrl, String location, String phoneNumber, String webUrl, String[] keywords) {
+    public RestaurantInfo(String id, String name, String imageUrl, String location, String phoneNumber, String webUrl, String[] keywords, Boolean isFavorites) {
         this.id = id;
         this.name = name;
         this.imageUrl = imageUrl;
@@ -13,5 +13,6 @@ public class RestaurantInfo {
         this.phoneNumber = phoneNumber;
         this.webUrl = webUrl;
         this.keywords = keywords;
+        this.isFavorites = isFavorites;
     }
 }

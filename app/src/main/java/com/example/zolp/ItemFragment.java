@@ -3,21 +3,25 @@ package com.example.zolp;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -31,15 +35,18 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class ItemFragment extends Fragment {
     private String location, target;
-    private boolean getLocationDone = false, getKeywordDone = false;
     private ViewPager2 pager;
     private RecommendViewAdapter adapter;
 
     private final ArrayList<RestaurantInfo> list = new ArrayList<RestaurantInfo>();
+    private ArrayList<String> favoritesList, rejectionsList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,43 +54,45 @@ public class ItemFragment extends Fragment {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DocumentReference docRef = FirebaseFirestore.getInstance().collection("users")
                 .document(user.getUid());
-        docRef.collection("locations")
+        Task<QuerySnapshot> favoritesTask = docRef.collection("favorites").get();
+        Task<QuerySnapshot> rejectionsTask = docRef.collection("rejections").get();
+        Task<QuerySnapshot> locationsTask = docRef.collection("locations")
                 .orderBy("imageCount", Query.Direction.DESCENDING)   //가장 많이 방문한 지역 1위 가져오기
                 .limit(1)
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (!queryDocumentSnapshots.isEmpty()) { //데이터 존재
-                            location = queryDocumentSnapshots.getDocuments().get(0).getId();
-                        } else {       //데이터 없으면 일단 비우기. 나중에 따로 메시지 띄울 필요
-                            location = "";
-                        }
-                        getLocationDone = true;
-                        if (getKeywordDone) {     //키워드 가져오기도 끝났으면 크롤링. 안 끝났으면 밑 리스너에서 크롤링 실행.
-                            openNewThread();
-                        }
-                    }
-                });
-        docRef.collection("keywords")
+                .get();
+        Task<QuerySnapshot> keywordsTask = docRef.collection("keywords")
                 .orderBy("imageCount", Query.Direction.DESCENDING)
                 .limit(1)
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            target = queryDocumentSnapshots.getDocuments().get(0).getId();
-                        } else {
-                            target = "";
-                        }
-                        getKeywordDone = true;
-                        if (getLocationDone) {
-                            openNewThread();
-                        }
+                .get();
+        Tasks.whenAllSuccess(favoritesTask, rejectionsTask, locationsTask, keywordsTask).addOnSuccessListener(new OnSuccessListener<List<Object>>() {
+            @Override
+            public void onSuccess(List<Object> objects) { //4가지 쿼리 다 끝난후 웹크롤링
+                QuerySnapshot q1 = (QuerySnapshot) objects.get(0), q2 = (QuerySnapshot) objects.get(1), q3 = (QuerySnapshot) objects.get(2), q4 = (QuerySnapshot) objects.get(3);
+                if (!q1.isEmpty()) {
+                    favoritesList = new ArrayList<>();
+                    for (DocumentSnapshot i : q1.getDocuments()) {
+                        favoritesList.add(i.getId());
                     }
-                });
-
+                }
+                if (!q2.isEmpty()) {
+                    rejectionsList = new ArrayList<>();
+                    for (DocumentSnapshot i : q2.getDocuments()) {
+                        rejectionsList.add(i.getId());
+                    }
+                }
+                if (!q3.isEmpty()) { //데이터 존재
+                    location = q3.getDocuments().get(0).getId();
+                } else {       //데이터 없으면 일단 비우기. 나중에 따로 메시지 띄울 필요
+                    location = "";
+                }
+                if (!q4.isEmpty()) {
+                    target = q4.getDocuments().get(0).getId();
+                } else {
+                    target = "";
+                }
+                openNewThread();
+            }
+        });
 
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
@@ -99,13 +108,41 @@ public class ItemFragment extends Fragment {
                     getActivity().startActivity(intent);
                 }
             }
+
+            @Override
+            public void setFavorites(Button btn, int position) {
+                String id = adapter.getItem(position).id;
+                Boolean isFavorites = adapter.getItem(position).isFavorites;
+                if(isFavorites){//좋아요 취소
+                    docRef.collection("favorites").document(id).delete();
+                    btn.setBackgroundResource(R.drawable.bookmark_before);
+                    adapter.getItem(position).isFavorites = false;
+                }
+                else { //맛집 좋아요 등록
+                    Map<String, String> newFavorites = new HashMap<>();
+                    newFavorites.put("id", id);
+                    docRef.collection("favorites").document(id).set(newFavorites);
+                    btn.setBackgroundResource(R.drawable.bookmark_after);
+                    adapter.getItem(position).isFavorites = true;
+                }
+            }
+
+            @Override
+            public void rejectItem(int position) {
+                String id = adapter.getItem(position).id;
+                Map<String, String> newRejection = new HashMap<>();
+                newRejection.put("id", id);
+                docRef.collection("rejections").document(id).set(newRejection);
+                adapter.deleteItem(position);
+            }
         });
+
         pager.setAdapter(adapter);
 
         pager.setOffscreenPageLimit(3);
 
         CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-        compositePageTransformer.addTransformer(new MarginPageTransformer(80));
+        compositePageTransformer.addTransformer(new MarginPageTransformer(60));
         compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
             @Override
             public void transformPage(@NonNull View page, float position) {
@@ -114,9 +151,6 @@ public class ItemFragment extends Fragment {
             }
         });
         pager.setPageTransformer(compositePageTransformer);
-        RecyclerView rv = (RecyclerView) pager.getChildAt(0);
-        rv.setPadding(30, 0, 30, 0);
-        rv.setClipToPadding(false);
 
         return view;
     }
@@ -152,18 +186,27 @@ public class ItemFragment extends Fragment {
 
             Iterator iter = jsonObject.keySet().iterator();
             ArrayList<JSONObject> jsonObjectsList = new ArrayList<>();
-
+            ArrayList<JSONObject> favoritesFirstList = new ArrayList<>();
             while (iter.hasNext()) {
                 String key = (String) iter.next();
                 if (key.contains("RestaurantListSummary")) {
                     JSONObject value = (JSONObject) jsonObject.get(key);
-                    jsonObjectsList.add(value);
+                    if(rejectionsList == null || !rejectionsList.contains((String)value.get("id"))) {      //차단 안된 맛집 필터링
+                        if (favoritesList != null && favoritesList.contains((String) value.get("id"))) {        //좋아요 목록에 있는 맛집이면 따로 저장
+                            value.put("favorites", true);
+                            favoritesFirstList.add(value);
+                        } else {
+                            value.put("favorites", false);
+                            jsonObjectsList.add(value);
+                        }
+                    }
                 }
             }
             Collections.shuffle(jsonObjectsList);
-
-            for (int i = 0; i < jsonObjectsList.size(); i++) {
-                JSONObject value = jsonObjectsList.get(i);
+            favoritesFirstList.addAll(jsonObjectsList);                     //좋아요 누른 맛집이 앞으로 오게 리스트 합침
+            for (int i = 0; i < favoritesFirstList.size(); i++) {
+                JSONObject value = favoritesFirstList.get(i);
+                String id = (String) value.get("id");
                 String name = (String) value.get("name");
                 String category = (String) value.get("category");
                 String address = (String) value.get("fullAddress");
@@ -171,8 +214,9 @@ public class ItemFragment extends Fragment {
                 String imageUrl = (String) value.get("imageUrl");
                 String routeUrl = (String) value.get("routeUrl");
                 String visitorReviewScore = (String) value.get("visitorReviewScore");
+                Boolean isFavorites = (Boolean) value.get("favorites");
                 //list 대신 adapter로 직접 정보 전달
-                adapter.addItems(new RestaurantInfo(0, name, imageUrl, address, phone, routeUrl, new String[]{target}));
+                adapter.addItem(new RestaurantInfo(id, name, imageUrl, address, phone, routeUrl, new String[]{target}, isFavorites));
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();

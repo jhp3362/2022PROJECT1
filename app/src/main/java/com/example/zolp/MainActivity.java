@@ -172,14 +172,4 @@ public class MainActivity extends AppCompatActivity {
             getCurrentFocus().clearFocus();
         }
     }
-
-
-    @Override
-    public void onActivityReenter(int resultCode, Intent data) {
-        if(resultCode == RESULT_OK && data != null){
-            int endIndex = data.getIntExtra("end_index", -1);
-        }
-    }
-
-
 }

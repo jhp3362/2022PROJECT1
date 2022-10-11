@@ -2,6 +2,7 @@ package com.example.zolp;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,8 +54,13 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         this.listener = listener;
     }
 
-    public void addItems(RestaurantInfo info){
+    public void addItem(RestaurantInfo info){
         mValues.add(info);
+    }
+
+    public void deleteItem(int position){
+        mValues.remove(position);
+        notifyItemRemoved(position);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -63,9 +69,9 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         public final TextView location;
         public final TextView phoneNumber;
         public final ImageView imageView;
-        public final Button button;
-        public int id;
+        public final Button button, favorites, rejection;
         public OnItemClickListener listener;
+        public Boolean isFavorites;
 
 
         public ViewHolder(FragmentItemViewBinding binding) {
@@ -82,18 +88,43 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
                     listener.itemClick(v, getBindingAdapterPosition());
                 }
             });
+            favorites = binding.favorites;
+            favorites.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.setFavorites((Button) v, getBindingAdapterPosition());
+                }
+            });
+            rejection = binding.rejection;
+            rejection.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.rejectItem(getBindingAdapterPosition());
+                }
+            });
         }
 
         @SuppressLint("ResourceAsColor")
         public void setViews(RestaurantInfo info) {
-            id = info.id;
             name.setText(info.name);
             keywords.setText(Arrays.toString(info.keywords));     // Restaurant의 keywords는 String[]
             location.setText(info.location);
             phoneNumber.setText(info.phoneNumber);
+            isFavorites = info.isFavorites;
 
-//            imageView.setBackgroundColor(R.color.purple_200);
-            Glide.with(context).load(info.imageUrl).into(imageView);
+            if(info.imageUrl != null) {
+                Glide.with(context).load(info.imageUrl).into(imageView);
+            }
+            else{
+                Glide.with(context).load(R.drawable.nopictures).into(imageView);
+            }
+
+            if(isFavorites){
+                favorites.setBackgroundResource(R.drawable.bookmark_after);
+            }
+            else{
+                favorites.setBackgroundResource(R.drawable.bookmark_before);
+            }
         }
 
         public void setOnItemClickListener(OnItemClickListener listener) {

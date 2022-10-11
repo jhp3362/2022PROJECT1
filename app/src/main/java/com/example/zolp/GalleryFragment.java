@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -122,6 +123,17 @@ public class GalleryFragment extends Fragment {
                 intent.putParcelableArrayListExtra("infoList", adapter.getInfoList());
                 imageLauncher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), adapter.getPairs()));
             }
+
+            @Override
+            public void setFavorites(Button btn, int position) {
+
+            }
+
+            @Override
+            public void rejectItem(int position) {
+
+            }
+
         });
         return rootView;
     }
@@ -137,13 +149,14 @@ public class GalleryFragment extends Fragment {
                             if (removedIndexes != null) {
                                 for (int i : removedIndexes) {
                                     adapter.destroyItem(i);
+                                    adapter.notifyItemRemoved(i);
                                 }
                             }
                             if(result.getData().getParcelableArrayListExtra("infoList") != null){
                                 infoList = result.getData().getParcelableArrayListExtra("infoList");
                                 adapter.setInfoList(infoList);
+                                recyclerView.setAdapter(adapter);
                             }
-                            recyclerView.setAdapter(adapter);
                             if (adapter.getItemCount() == 0) {
                                 noImageLayout.setVisibility(View.VISIBLE);
                             }
@@ -158,5 +171,4 @@ public class GalleryFragment extends Fragment {
         main.inGallery = false;
         super.onDetach();
     }
-
 }
