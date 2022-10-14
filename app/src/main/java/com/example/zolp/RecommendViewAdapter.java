@@ -2,7 +2,6 @@ package com.example.zolp;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,7 @@ import java.util.Arrays;
 public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdapter.ViewHolder> {
 
     private final ArrayList<RestaurantInfo> mValues;
-    private OnItemClickListener listener;
+    private OnItemClickListener buttonListener;
     private Context context;
     public RecommendViewAdapter(ArrayList<RestaurantInfo> items) {
         mValues = items;
@@ -38,7 +37,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.setViews(mValues.get(position));
-        holder.setOnItemClickListener(listener);
+        holder.setOnItemClickListener(buttonListener);
     }
 
     @Override
@@ -51,7 +50,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
+        this.buttonListener = listener;
     }
 
     public void addItem(RestaurantInfo info){
@@ -69,7 +68,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         public final TextView location;
         public final TextView phoneNumber;
         public final ImageView imageView;
-        public final Button button, favorites, rejection;
+        public final Button button, favorites, rejection, router;
         public OnItemClickListener listener;
         public Boolean isFavorites;
 
@@ -82,6 +81,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
             phoneNumber = binding.phoneNumber;
             imageView = binding.image;
             button = binding.button;
+
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -100,6 +100,14 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
                 @Override
                 public void onClick(View v) {
                     listener.rejectItem(getBindingAdapterPosition());
+                }
+            });
+
+            router = binding.router;
+            router.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    listener.route(getBindingAdapterPosition());
                 }
             });
         }

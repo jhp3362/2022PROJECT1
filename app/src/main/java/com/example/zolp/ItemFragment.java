@@ -3,7 +3,6 @@ package com.example.zolp;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,7 +89,7 @@ public class ItemFragment extends Fragment {
                 } else {
                     target = "";
                 }
-                openNewThread();
+                openScrappingThread();
             }
         });
 
@@ -113,12 +112,11 @@ public class ItemFragment extends Fragment {
             public void setFavorites(Button btn, int position) {
                 String id = adapter.getItem(position).id;
                 Boolean isFavorites = adapter.getItem(position).isFavorites;
-                if(isFavorites){//좋아요 취소
+                if (isFavorites) {//좋아요 취소
                     docRef.collection("favorites").document(id).delete();
                     btn.setBackgroundResource(R.drawable.bookmark_before);
                     adapter.getItem(position).isFavorites = false;
-                }
-                else { //맛집 좋아요 등록
+                } else { //맛집 좋아요 등록
                     Map<String, String> newFavorites = new HashMap<>();
                     newFavorites.put("id", id);
                     docRef.collection("favorites").document(id).set(newFavorites);
@@ -135,10 +133,24 @@ public class ItemFragment extends Fragment {
                 docRef.collection("rejections").document(id).set(newRejection);
                 adapter.deleteItem(position);
             }
+
+            @Override
+            public void route(int position) {
+                Intent intent = new Intent(getActivity(), MapActivity.class);
+
+                String ex = adapter.getItem(position).x;
+                String ey = adapter.getItem(position).y;
+                String ename = adapter.getItem(position).name;
+
+                intent.putExtra("ex", ex);
+                intent.putExtra("ey", ey);
+                intent.putExtra("ename", ename);
+
+                startActivity(intent);
+            }
         });
 
         pager.setAdapter(adapter);
-
         pager.setOffscreenPageLimit(3);
 
         CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
@@ -155,12 +167,13 @@ public class ItemFragment extends Fragment {
         return view;
     }
 
-    private void openNewThread() {
+
+    private void openScrappingThread() {
         try {
             Thread scrappingThread = new Thread() {
                 @Override
                 public void run() {
-                    GetRestaurantList();
+                    getRestaurantList();
                 }
             };
             scrappingThread.start();
@@ -171,7 +184,8 @@ public class ItemFragment extends Fragment {
         pager.setAdapter(adapter);      //크롤링 끝나면 viewpager 업데이트
     }
 
-    private void GetRestaurantList() {
+
+    private void getRestaurantList() {
         try {
             String URL = "https://pcmap.place.naver.com/restaurant/list?query=";
 
@@ -191,7 +205,7 @@ public class ItemFragment extends Fragment {
                 String key = (String) iter.next();
                 if (key.contains("RestaurantListSummary")) {
                     JSONObject value = (JSONObject) jsonObject.get(key);
-                    if(rejectionsList == null || !rejectionsList.contains((String)value.get("id"))) {      //차단 안된 맛집 필터링
+                    if (rejectionsList == null || !rejectionsList.contains((String) value.get("id"))) {      //차단 안된 맛집 필터링
                         if (favoritesList != null && favoritesList.contains((String) value.get("id"))) {        //좋아요 목록에 있는 맛집이면 따로 저장
                             value.put("favorites", true);
                             favoritesFirstList.add(value);
@@ -210,16 +224,19 @@ public class ItemFragment extends Fragment {
                 String name = (String) value.get("name");
                 String category = (String) value.get("category");
                 String address = (String) value.get("fullAddress");
+                String x = (String) value.get("x");
+                String y = (String) value.get("y");
                 String phone = (String) value.get("phone");
                 String imageUrl = (String) value.get("imageUrl");
                 String routeUrl = (String) value.get("routeUrl");
                 String visitorReviewScore = (String) value.get("visitorReviewScore");
                 Boolean isFavorites = (Boolean) value.get("favorites");
                 //list 대신 adapter로 직접 정보 전달
-                adapter.addItem(new RestaurantInfo(id, name, imageUrl, address, phone, routeUrl, new String[]{target}, isFavorites));
+                adapter.addItem(new RestaurantInfo(id, name, imageUrl, address, x, y, phone, routeUrl, new String[]{target}, isFavorites));
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }
+
 }

@@ -89,6 +89,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="상세보기" />
+
+        <Button
+            android:id="@+id/router"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="길찾기" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

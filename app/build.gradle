@@ -2,14 +2,14 @@ plugins {
     id 'com.android.application'
 }
 android {
-    compileSdk 32
+    compileSdk 33
     aaptOptions {
         noCompress "tflite"
     }
     defaultConfig {
         applicationId "com.example.zolp"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -56,7 +56,9 @@ dependencies {
     implementation 'com.google.mlkit:translate:17.0.1'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation(group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1') { exclude group: 'org.hamcrest', module: 'hamcrest-core' }
- 
+    implementation 'com.naver.maps:map-sdk:3.15.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.6.2'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
 
 }
 apply plugin: 'com.android.application'

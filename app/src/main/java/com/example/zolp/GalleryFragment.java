@@ -134,6 +134,9 @@ public class GalleryFragment extends Fragment {
 
             }
 
+            public void route(int position) {}
+
+
         });
         return rootView;
     }
