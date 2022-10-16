@@ -68,7 +68,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         public final TextView location;
         public final TextView phoneNumber;
         public final ImageView imageView;
-        public final Button button, favorites, rejection, router;
+        public final Button button, favorites, rejection, carRouter, transitRouter;
         public OnItemClickListener listener;
         public Boolean isFavorites;
 
@@ -102,12 +102,18 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
                     listener.rejectItem(getBindingAdapterPosition());
                 }
             });
-
-            router = binding.router;
-            router.setOnClickListener(new View.OnClickListener(){
+            transitRouter = binding.transitRouter;
+            transitRouter.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v) {
-                    listener.route(getBindingAdapterPosition());
+                    listener.route(getBindingAdapterPosition(), "transit");
+                }
+            });
+            carRouter = binding.carRouter;
+            carRouter.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.route(getBindingAdapterPosition(), "car");
                 }
             });
         }

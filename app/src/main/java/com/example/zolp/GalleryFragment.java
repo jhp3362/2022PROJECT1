@@ -134,7 +134,7 @@ public class GalleryFragment extends Fragment {
 
             }
 
-            public void route(int position) {}
+            public void route(int position, String type) {}
 
 
         });

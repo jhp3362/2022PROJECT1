@@ -323,7 +323,6 @@ public class AfterCaptureFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Exception e) {
                 if (e instanceof ResolvableApiException) { //위치기능 꺼진 경우
-                    if (!checkLocationPermission()) return;
                     IntentSenderRequest intentSenderRequest = new IntentSenderRequest.Builder(((ResolvableApiException) e).getResolution()).build();
                     locationLauncher.launch(intentSenderRequest);
                 } else {

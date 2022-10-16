@@ -135,7 +135,7 @@ public class ItemFragment extends Fragment {
             }
 
             @Override
-            public void route(int position) {
+            public void route(int position, String type) {
                 Intent intent = new Intent(getActivity(), MapActivity.class);
 
                 String ex = adapter.getItem(position).x;
@@ -145,6 +145,7 @@ public class ItemFragment extends Fragment {
                 intent.putExtra("ex", ex);
                 intent.putExtra("ey", ey);
                 intent.putExtra("ename", ename);
+                intent.putExtra("type", type);
 
                 startActivity(intent);
             }
