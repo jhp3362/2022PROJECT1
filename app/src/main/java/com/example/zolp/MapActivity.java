@@ -18,6 +18,8 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.webkit.GeolocationPermissions;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -72,6 +74,14 @@ public class MapActivity extends AppCompatActivity {
         mWebView = findViewById(R.id.webview);
         mWebView.setWebViewClient(new WebViewClient());
         mWebView.getSettings().setJavaScriptEnabled(true);
+
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                super.onGeolocationPermissionsShowPrompt(origin, callback);
+                callback.invoke(origin, true, false);
+            }
+        });
 
         needPermissionLayout = findViewById(R.id.permission_layout);
         Button permission = findViewById(R.id.permission);
@@ -165,14 +175,13 @@ public class MapActivity extends AppCompatActivity {
                         needPermissionLayout.setVisibility(View.INVISIBLE);
                         mWebView.setVisibility(View.VISIBLE);
                         loadWebView();
-                    }
-                    else{
+                    } else {
                         makeLocationAlert();
                     }
                 }
             });
 
-    private void makeLocationAlert(){
+    private void makeLocationAlert() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("위치 기능 꺼짐");
         builder.setMessage("서비스 이용 시 위치 기능이 필요합니다.");
@@ -201,11 +210,11 @@ public class MapActivity extends AppCompatActivity {
 
     private final ActivityResultLauncher<Intent> locationOnOffLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            loadWebView();
-        }
-    });
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    loadWebView();
+                }
+            });
 
     private final ActivityResultLauncher<String[]> locationPermissionLauncher = registerForActivityResult(new ActivityResultContracts
                     .RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {//권한 허용 하라는 알림
@@ -232,14 +241,13 @@ public class MapActivity extends AppCompatActivity {
             new ActivityResultCallback<ActivityResult>() {//설정 창 띄우는 알림
                 @Override
                 public void onActivityResult(ActivityResult result) {
-                    if(ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                            ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                    if (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                            ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         needPermissionLayout.setVisibility(View.INVISIBLE);
                         mWebView.setVisibility(View.VISIBLE);
                         loadWebView();
-                    }
-                    else {
-                        Toast.makeText(getBaseContext(),"서비스 이용 시 위치 권한이 필요합니다. 설정에서 변경할 수 있습니다.",Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getBaseContext(), "서비스 이용 시 위치 권한이 필요합니다. 설정에서 변경할 수 있습니다.", Toast.LENGTH_SHORT).show();
                         needPermissionLayout.setVisibility(View.VISIBLE);
                         mWebView.setVisibility(View.INVISIBLE);
                     }
