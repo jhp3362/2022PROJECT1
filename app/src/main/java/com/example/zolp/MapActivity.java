@@ -2,16 +2,10 @@ package com.example.zolp;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
@@ -30,14 +24,11 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -53,13 +44,9 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 public class MapActivity extends AppCompatActivity {
 
@@ -146,7 +133,7 @@ public class MapActivity extends AppCompatActivity {
                         String later = (Integer.parseInt(time.substring(0, 2)) < 6) ? "true" : "false";
                         String url = "https://way-m.map.naver.com/quick-path/" + sx + "," + sy + "," + sname +
                                 "/" + ex + "," + ey + "," + ename + "/-/" + type + "/0?departureTime=" + date + "T" + time + "&later=" + later;
-
+                        Log.d("aaaaaaa", url);
                         mWebView.loadUrl(url);
                         fusedLocationClient.removeLocationUpdates(this);
                     }

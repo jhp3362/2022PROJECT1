@@ -32,18 +32,12 @@
             app:layout_constraintTop_toBottomOf="@+id/image">
 
             <Button
-                android:id="@+id/favorites"
+                android:id="@+id/delete"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_margin="15dp"
-                android:background="@drawable/bookmark_before" />
+                android:background="@drawable/delete" />
 
-            <Button
-                android:id="@+id/rejection"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_margin="15dp"
-                android:background="@drawable/rejection" />
         </LinearLayout>
 
         <LinearLayout
@@ -65,7 +59,7 @@
                 android:textSize="28sp" />
 
             <TextView
-                android:id="@+id/keyword"
+                android:id="@+id/keywords"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
@@ -92,8 +86,10 @@
                 android:text="상세보기" />
 
             <LinearLayout
+                android:id="@+id/route_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:visibility="invisible"
                 android:orientation="horizontal">
 
                 <Button
@@ -110,7 +106,6 @@
                     android:layout_weight="1"
                     android:text="대중교통" />
             </LinearLayout>
-
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

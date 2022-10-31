@@ -59,23 +59,39 @@
         android:layout_gravity="end"
         android:layout_marginTop="?attr/actionBarSize"
         android:orientation="vertical"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <Button
             android:id="@+id/galley_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/button_design_rect"
-            android:textColor="@color/black"
-            android:text="저장된 사진" />
+            android:text="저장된 사진"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/favorites_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_design_rect"
+            android:text="찜 목록 관리"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/rejections_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_design_rect"
+            android:text="차단 목록 관리"
+            android:textColor="@color/black" />
 
         <Button
             android:id="@+id/logout_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/button_design_rect"
-            android:textColor="@color/black"
-            android:text="로그아웃" />
+            android:text="로그아웃"
+            android:textColor="@color/black" />
     </LinearLayout>
 
     <include layout="@layout/content_main" />

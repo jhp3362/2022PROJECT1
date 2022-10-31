@@ -32,8 +32,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -98,7 +100,7 @@ public class ItemFragment extends Fragment {
         pager = view.findViewById(R.id.view_pager);
 
         adapter = new RecommendViewAdapter(list);
-        adapter.setOnItemClickListener(new OnItemClickListener() {
+        adapter.setOnItemClickListener(new RecommendViewAdapter.OnItemClickListener() {
             @Override
             public void itemClick(View view, int position) {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(adapter.getItem(position).webUrl));
@@ -110,16 +112,25 @@ public class ItemFragment extends Fragment {
 
             @Override
             public void setFavorites(Button btn, int position) {
-                String id = adapter.getItem(position).id;
-                Boolean isFavorites = adapter.getItem(position).isFavorites;
-                if (isFavorites) {//좋아요 취소
-                    docRef.collection("favorites").document(id).delete();
+                RestaurantInfo info = adapter.getItem(position);
+                if (info.isFavorites) {//좋아요 취소
+                    docRef.collection("favorites").document(info.id).delete();
                     btn.setBackgroundResource(R.drawable.bookmark_before);
                     adapter.getItem(position).isFavorites = false;
                 } else { //맛집 좋아요 등록
                     Map<String, String> newFavorites = new HashMap<>();
-                    newFavorites.put("id", id);
-                    docRef.collection("favorites").document(id).set(newFavorites);
+                    newFavorites.put("id", info.id);
+                    newFavorites.put("name", info.name);
+                    newFavorites.put("imageUrl", info.imageUrl);
+                    newFavorites.put("location", info.location);
+                    newFavorites.put("x", info.x);
+                    newFavorites.put("y", info.y);
+                    newFavorites.put("phoneNumber", info.phoneNumber);
+                    newFavorites.put("webUrl", info.webUrl);
+                    newFavorites.put("keyword", info.keyword);
+                    newFavorites.put("date", new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault()).format(new Date()));
+
+                    docRef.collection("favorites").document(info.id).set(newFavorites);
                     btn.setBackgroundResource(R.drawable.bookmark_after);
                     adapter.getItem(position).isFavorites = true;
                 }
@@ -127,10 +138,18 @@ public class ItemFragment extends Fragment {
 
             @Override
             public void rejectItem(int position) {
-                String id = adapter.getItem(position).id;
+                RestaurantInfo info = adapter.getItem(position);
                 Map<String, String> newRejection = new HashMap<>();
-                newRejection.put("id", id);
-                docRef.collection("rejections").document(id).set(newRejection);
+                newRejection.put("id", info.id);
+                newRejection.put("name", info.name);
+                newRejection.put("imageUrl", info.imageUrl);
+                newRejection.put("location", info.location);
+                newRejection.put("phoneNumber", info.phoneNumber);
+                newRejection.put("webUrl", info.webUrl);
+                newRejection.put("keyword", info.keyword);
+                newRejection.put("date", new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault()).format(new Date()));
+
+                docRef.collection("rejections").document(info.id).set(newRejection);
                 adapter.deleteItem(position);
             }
 
@@ -233,7 +252,7 @@ public class ItemFragment extends Fragment {
                 String visitorReviewScore = (String) value.get("visitorReviewScore");
                 Boolean isFavorites = (Boolean) value.get("favorites");
                 //list 대신 adapter로 직접 정보 전달
-                adapter.addItem(new RestaurantInfo(id, name, imageUrl, address, x, y, phone, routeUrl, new String[]{target}, isFavorites));
+                adapter.addItem(new RestaurantInfo(id, name, imageUrl, address, x, y, phone, routeUrl, target, isFavorites));
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();

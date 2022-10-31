@@ -6,11 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -114,7 +112,7 @@ public class GalleryFragment extends Fragment {
             }
         });
 
-        adapter.setOnItemClickListener(new OnItemClickListener() {
+        adapter.setOnItemClickListener(new GalleryAdapter.OnItemClickListener() {
             @Override
             public void itemClick(View view, int position) {
                 Intent intent = new Intent(getContext(), ImageActivity.class);
@@ -123,20 +121,6 @@ public class GalleryFragment extends Fragment {
                 intent.putParcelableArrayListExtra("infoList", adapter.getInfoList());
                 imageLauncher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), adapter.getPairs()));
             }
-
-            @Override
-            public void setFavorites(Button btn, int position) {
-
-            }
-
-            @Override
-            public void rejectItem(int position) {
-
-            }
-
-            public void route(int position, String type) {}
-
-
         });
         return rootView;
     }

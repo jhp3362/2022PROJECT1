@@ -1,7 +1,6 @@
 package com.example.zolp;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -20,14 +19,6 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
 public class MainActivity extends AppCompatActivity {
     public FirebaseAuth mAuth;
     private TextView userName;
@@ -36,8 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseUser user;
     private boolean isMenuOpened = false;
     private Animation downMenu, upMenu;
-    public boolean inGallery = false;
-    private ArrayList<RestaurantInfo> list = null;
+    public boolean inGallery = false, inFavorites = false, inRejections = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         userMenu = findViewById(R.id.user_menu);
         Button gallery = findViewById(R.id.galley_btn);
+        Button favorites = findViewById(R.id.favorites_btn);
+        Button rejections = findViewById(R.id.rejections_btn);
         Button logout = findViewById(R.id.logout_btn);
         mAuth = FirebaseAuth.getInstance();
 
@@ -118,11 +110,35 @@ public class MainActivity extends AppCompatActivity {
                 userMenu.startAnimation(upMenu);
                 isMenuOpened = !isMenuOpened;
                 if (!inGallery) {
+                    getSupportFragmentManager().popBackStack();
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_content_main, new GalleryFragment()).addToBackStack(null).commit();
                 }
             }
         });
 
+        favorites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                userMenu.startAnimation(upMenu);
+                isMenuOpened = !isMenuOpened;
+                if (!inFavorites) {
+                    getSupportFragmentManager().popBackStack();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_content_main, new FavoritesFragment()).addToBackStack(null).commit();
+                }
+            }
+        });
+
+        rejections.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                userMenu.startAnimation(upMenu);
+                isMenuOpened = !isMenuOpened;
+                if (!inRejections) {
+                    getSupportFragmentManager().popBackStack();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_content_main, new RejectionsFragment()).addToBackStack(null).commit();
+                }
+            }
+        });
 
     }
 

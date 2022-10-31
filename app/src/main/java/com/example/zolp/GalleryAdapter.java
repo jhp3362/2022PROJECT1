@@ -24,6 +24,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     private OnItemClickListener listener;
     private Pair<View, String>[] pairs;
 
+    interface OnItemClickListener {
+        void itemClick(View view, int position);
+    }
+
 
     public GalleryAdapter(Context context) {
         this.context = context;
