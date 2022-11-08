@@ -1,5 +1,6 @@
 package com.example.zolp;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -102,12 +103,12 @@ public class ItemFragment extends Fragment {
         adapter = new RecommendViewAdapter(list);
         adapter.setOnItemClickListener(new RecommendViewAdapter.OnItemClickListener() {
             @Override
-            public void itemClick(View view, int position) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(adapter.getItem(position).webUrl));
-
-                if (getActivity() != null) {
-                    getActivity().startActivity(intent);
-                }
+            public void itemClick(int position) {
+                Intent intent = new Intent(getActivity(), ItemDetailActivity.class);
+                // Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(adapter.getItem(position).webUrl));
+                String id = adapter.getItem(position).id;
+                intent.putExtra("id", id);
+                startActivity(intent);
             }
 
             @Override

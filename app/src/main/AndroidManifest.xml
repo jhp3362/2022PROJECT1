@@ -38,7 +38,7 @@
             android:name=".MapActivity"
             android:exported="false" />
         <activity
-            android:name=".MapActivity"
+            android:name=".ItemDetailActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

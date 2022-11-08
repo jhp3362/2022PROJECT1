@@ -25,7 +25,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
     }
 
     interface OnItemClickListener {
-        void itemClick(View view, int position);
+        void itemClick(int position);
         void setFavorites(Button btn, int position);
         void rejectItem(int position);
         void route(int position, String type);
@@ -87,7 +87,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.itemClick(v, getBindingAdapterPosition());
+                    listener.itemClick(getBindingAdapterPosition());
                 }
             });
             favorites = binding.favorites;
