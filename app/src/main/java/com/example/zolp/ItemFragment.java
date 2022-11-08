@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ItemFragment extends Fragment {
     private String location, target;
@@ -238,6 +239,7 @@ public class ItemFragment extends Fragment {
                 String y = (String) value.get("y");
                 String phone = (String) value.get("phone");
                 String imageUrl = (String) value.get("imageUrl");
+                if (imageUrl == null) imageUrl = getImageUrl(id);
                 String routeUrl = (String) value.get("routeUrl");
                 String visitorReviewScore = (String) value.get("visitorReviewScore");
                 Boolean isFavorites = (Boolean) value.get("favorites");
@@ -247,6 +249,15 @@ public class ItemFragment extends Fragment {
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    private String getImageUrl(String id) throws IOException {
+        String url  = "https://pcmap.place.naver.com/restaurant/" + id + "/home";
+        Document document = Jsoup.connect(url).get();
+        String rawScript = document.getElementsByClass("K0PDV").get(0).toString();
+        int start = rawScript.indexOf("&quot;") + "&quot;".length();
+        int end = rawScript.indexOf("&quot;", start + 1);
+        return rawScript.substring(start, end);
     }
 
 }
