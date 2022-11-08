@@ -21,7 +21,7 @@
         android:padding="15dp"
         android:textSize="18sp"
         android:visibility="invisible"
-        android:text="차단한 가게 목록" />
+        android:text="추천 제외 가게 목록" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -35,8 +35,8 @@
             android:layout_height="match_parent"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp" />
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp" />
     </LinearLayout>
     <LinearLayout
         android:id="@+id/no_image_layout"

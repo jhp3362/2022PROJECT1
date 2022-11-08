@@ -2,19 +2,23 @@ package com.example.zolp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,7 +50,7 @@ public class RejectionsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_favorites, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_favor_reject, container, false);
         RejectionsAdapter adapter = new RejectionsAdapter(list);
         LinearLayout noImageLayout = rootView.findViewById(R.id.no_image_layout);
         TextView noRejectTxt = rootView.findViewById(R.id.no_item_txt);
@@ -87,12 +91,12 @@ public class RejectionsFragment extends Fragment {
 
         adapter.setOnItemClickListener(new RejectionsAdapter.OnItemClickListener() {
             @Override
-            public void itemClick(View view, int position) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(adapter.getItem(position).webUrl));
+            public void itemClick(int position) {
+                Intent intent = new Intent(getActivity(), ItemDetailActivity.class);
 
-                if (getActivity() != null) {
-                    getActivity().startActivity(intent);
-                }
+                String id = adapter.getItem(position).id;
+                intent.putExtra("id", id);
+                startActivity(intent);
             }
 
             @Override
@@ -101,6 +105,14 @@ public class RejectionsFragment extends Fragment {
                 FirebaseFirestore.getInstance().collection("users").document(user.getUid())
                         .collection("rejections").document(id).delete();
                 adapter.deleteItem(position);
+                if(position==adapter.getItemCount() || position == adapter.getItemCount()-1) {
+                    pager.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pager.requestTransform();
+                        }
+                    });
+                }
                 if(adapter.getItemCount()==0){
                     noImageLayout.setVisibility(View.VISIBLE);
                     noRejectTxt.setText("차단한 식당이 없어요!");
@@ -110,18 +122,18 @@ public class RejectionsFragment extends Fragment {
 
         pager = rootView.findViewById(R.id.pager);
         pager.setAdapter(adapter);
-        pager.setOffscreenPageLimit(3);
-
-        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
+        pager.setOffscreenPageLimit(1);
+        /*CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
         compositePageTransformer.addTransformer(new MarginPageTransformer(60));
         compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
             @Override
             public void transformPage(@NonNull View page, float position) {
                 float r = 1 - Math.abs(position);
-                page.setScaleY(0.85f + r * 0.15f);
+                page.setScaleY(0.7f + r * 0.3f);
             }
         });
-        pager.setPageTransformer(compositePageTransformer);
+        pager.setPageTransformer(compositePageTransformer);*/
+
 
         return rootView;
     }

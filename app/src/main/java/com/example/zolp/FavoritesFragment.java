@@ -44,7 +44,7 @@ public class FavoritesFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_favorites, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_favor_reject, container, false);
         FavoritesAdapter adapter = new FavoritesAdapter(list);
         LinearLayout noImageLayout = rootView.findViewById(R.id.no_image_layout);
         TextView noFavorTxt = rootView.findViewById(R.id.no_item_txt);
@@ -87,12 +87,12 @@ public class FavoritesFragment extends Fragment {
 
         adapter.setOnItemClickListener(new FavoritesAdapter.OnItemClickListener() {
             @Override
-            public void itemClick(View view, int position) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(adapter.getItem(position).webUrl));
+            public void itemClick(int position) {
+                Intent intent = new Intent(getActivity(), ItemDetailActivity.class);
 
-                if (getActivity() != null) {
-                    getActivity().startActivity(intent);
-                }
+                String id = adapter.getItem(position).id;
+                intent.putExtra("id", id);
+                startActivity(intent);
             }
 
             @Override
@@ -126,18 +126,8 @@ public class FavoritesFragment extends Fragment {
 
         pager = rootView.findViewById(R.id.pager);
         pager.setAdapter(adapter);
-        pager.setOffscreenPageLimit(3);
+        pager.setOffscreenPageLimit(1);
 
-        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-        compositePageTransformer.addTransformer(new MarginPageTransformer(60));
-        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
-            @Override
-            public void transformPage(@NonNull View page, float position) {
-                float r = 1 - Math.abs(position);
-                page.setScaleY(0.85f + r * 0.15f);
-            }
-        });
-        pager.setPageTransformer(compositePageTransformer);
 
         return rootView;
     }

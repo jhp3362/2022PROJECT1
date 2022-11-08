@@ -266,9 +266,12 @@ public class AfterCaptureFragment extends Fragment {
                                     DocumentReference keywordRef = docRef.collection("keywords").document(translatedLabel);  //DB keywords 폴더에 키워드 문서 생성
                                     DocumentSnapshot snapshot2 = transaction.get(keywordRef);
                                     Object count2 = snapshot2.get("imageCount");
+                                    Double keywordRatingSum = (Double) snapshot2.get("ratingSum");
+                                    float rating = ratingBar.getRating();
+                                    rating = (rating==0) ? 2.5F : rating;
 
                                     if(count==null) {       //새로 생성된 문서면 image 개수 1 아니면 기존 개수+1
-                                        Map<String, Integer> newCount = new HashMap<>();
+                                        Map<String, Object> newCount = new HashMap<>();
                                         newCount.put("imageCount", 1);
                                         transaction.set(locationRef, newCount);
                                     }
@@ -277,12 +280,13 @@ public class AfterCaptureFragment extends Fragment {
                                     }
 
                                     if(count2==null) {
-                                        Map<String, Integer> newCount = new HashMap<>();
+                                        Map<String, Object> newCount = new HashMap<>();
                                         newCount.put("imageCount", 1);
+                                        newCount.put("ratingSum", rating);
                                         transaction.set(keywordRef, newCount);
                                     }
                                     else {
-                                        transaction.update(keywordRef, "imageCount", FieldValue.increment(1));
+                                        transaction.update(keywordRef, "imageCount", FieldValue.increment(1), "ratingSum", keywordRatingSum + rating);
                                     }
                                     transaction.set(docRef.collection("images").document(storageImageName), image);     //DB images 폴더에 사진 정보 문서 생성
 
@@ -372,13 +376,18 @@ public class AfterCaptureFragment extends Fragment {
                 DocumentReference keywordRef = docRef.collection("keywords").document(translatedLabel);  //DB keywords 폴더에 키워드 문서 생성
                 DocumentSnapshot snapshot = transaction.get(keywordRef);
                 Object count = snapshot.get("imageCount");
+                Double ratingSum = (Double)snapshot.get("ratingSum");
+                float rating = ratingBar.getRating();
+                rating = (rating==0) ? 2.5F : rating;
+
                 if(count==null) {
-                    Map<String, Integer> newCount = new HashMap<>();
+                    Map<String, Object> newCount = new HashMap<>();
                     newCount.put("imageCount", 1);
+                    newCount.put("ratingSum", rating);
                     transaction.set(keywordRef, newCount);
                 }
                 else {
-                    transaction.update(keywordRef, "imageCount", FieldValue.increment(1));
+                    transaction.update(keywordRef, "imageCount", FieldValue.increment(1), "ratingSum", ratingSum + rating);
                 }
                 return null;
             }

@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.zolp.databinding.FragmentFavoritesViewBinding;
+import com.example.zolp.databinding.FragmentFavorRejectViewBinding;
 
 import java.util.ArrayList;
 
@@ -26,7 +26,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
     }
 
     interface OnItemClickListener {
-        void itemClick(View view, int position);
+        void itemClick(int position);
         void deleteFavorite(int position);
         void route(int position, String type);
     }
@@ -34,7 +34,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
     @Override
     public FavoritesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
-        return new FavoritesAdapter.ViewHolder(FragmentFavoritesViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new FavoritesAdapter.ViewHolder(FragmentFavorRejectViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
 
     }
 
@@ -76,7 +76,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
         public final Button button, delete, transitRouter, carRouter;
         public LinearLayout routeLayout;
 
-        public ViewHolder(FragmentFavoritesViewBinding binding) {
+        public ViewHolder(FragmentFavorRejectViewBinding binding) {
             super(binding.getRoot());
             name = binding.name;
             keywords = binding.keywords;
@@ -90,7 +90,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.itemClick(v, getBindingAdapterPosition());
+                    listener.itemClick(getBindingAdapterPosition());
                 }
             });
             delete.setOnClickListener(new View.OnClickListener() {

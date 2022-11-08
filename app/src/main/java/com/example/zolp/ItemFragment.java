@@ -63,7 +63,7 @@ public class ItemFragment extends Fragment {
                 .limit(1)
                 .get();
         Task<QuerySnapshot> keywordsTask = docRef.collection("keywords")
-                .orderBy("imageCount", Query.Direction.DESCENDING)
+                .orderBy("ratingSum", Query.Direction.DESCENDING)
                 .limit(1)
                 .get();
         Tasks.whenAllSuccess(favoritesTask, rejectionsTask, locationsTask, keywordsTask).addOnSuccessListener(new OnSuccessListener<List<Object>>() {
@@ -172,18 +172,7 @@ public class ItemFragment extends Fragment {
         });
 
         pager.setAdapter(adapter);
-        pager.setOffscreenPageLimit(3);
-
-        CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-        compositePageTransformer.addTransformer(new MarginPageTransformer(60));
-        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
-            @Override
-            public void transformPage(@NonNull View page, float position) {
-                float r = 1 - Math.abs(position);
-                page.setScaleY(0.85f + r * 0.15f);
-            }
-        });
-        pager.setPageTransformer(compositePageTransformer);
+        pager.setOffscreenPageLimit(1);
 
         return view;
     }

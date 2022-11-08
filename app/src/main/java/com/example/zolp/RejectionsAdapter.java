@@ -1,6 +1,7 @@
 package com.example.zolp;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +11,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
-import com.example.zolp.databinding.FragmentFavoritesViewBinding;
+import com.example.zolp.databinding.FragmentFavorRejectViewBinding;
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 
@@ -25,7 +28,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
     }
 
     interface OnItemClickListener {
-        void itemClick(View view, int position);
+        void itemClick(int position);
         void deleteRejection(int position);
     }
 
@@ -33,7 +36,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
     @Override
     public RejectionsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
-        return new RejectionsAdapter.ViewHolder(FragmentFavoritesViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+        return new RejectionsAdapter.ViewHolder(FragmentFavorRejectViewBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
 
     }
 
@@ -74,7 +77,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
         public final ImageView imageView;
         public final Button button, delete;
 
-        public ViewHolder(FragmentFavoritesViewBinding binding) {
+        public ViewHolder(FragmentFavorRejectViewBinding binding) {
             super(binding.getRoot());
             name = binding.name;
             keywords = binding.keywords;
@@ -87,7 +90,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.itemClick(v, getBindingAdapterPosition());
+                    listener.itemClick(getBindingAdapterPosition());
                 }
             });
             delete.setOnClickListener(new View.OnClickListener() {

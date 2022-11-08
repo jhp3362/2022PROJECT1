@@ -8,7 +8,6 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -53,6 +52,7 @@ public class ImageActivity extends AppCompatActivity {
     private ImageAdapter adapter;
     private boolean isRemoved = false, isRatingChanged = false;
     private final ArrayList<Integer> removedIndexes = new ArrayList<>();
+    private float removedRating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +200,8 @@ public class ImageActivity extends AppCompatActivity {
 
                                             isRemoved = true;
                                             int removedIdx = pager.getCurrentItem();
+                                            removedRating = infoList.get(removedIdx).getRating();
+
                                             removedIndexes.add(removedIdx);
                                             adapter.destroyItem(removedIdx);
                                             infoList.remove(removedIdx);
@@ -215,9 +217,36 @@ public class ImageActivity extends AppCompatActivity {
                                                 pager.setCurrentItem(removedIdx, false);
                                             }
                                             DocumentReference locationRef = docRef.collection("locations").document(document.getString("location"));
-                                            locationRef.update("imageCount", FieldValue.increment(-1));
+                                            locationRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                    if(documentSnapshot.contains("imageCount")) {
+                                                        Long count = documentSnapshot.getLong("imageCount");
+                                                        if (count == 1) {
+                                                            locationRef.delete();
+                                                        } else {
+                                                            locationRef.update("imageCount", FieldValue.increment(-1));
+                                                        }
+                                                    }
+                                                }
+                                            });
+
                                             DocumentReference keywordRef = docRef.collection("keywords").document(document.getString("keywords"));
-                                            keywordRef.update("imageCount", FieldValue.increment(-1));
+                                            keywordRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                    if(documentSnapshot.contains("imageCount")) {
+                                                        Long count = documentSnapshot.getLong("imageCount");
+                                                        Double keywordRatingSum = documentSnapshot.getDouble("ratingSum");
+                                                        if (count == 1) {
+                                                            keywordRef.delete();
+                                                        } else {
+                                                            removedRating = (removedRating==0) ? 2.5F : removedRating;
+                                                            keywordRef.update("imageCount", FieldValue.increment(-1), "ratingSum", keywordRatingSum - removedRating);
+                                                        }
+                                                    }
+                                                }
+                                            });
                                         }
                                     });
                                 }
@@ -257,7 +286,6 @@ public class ImageActivity extends AppCompatActivity {
     }
 
     private void setRatingTxt(TextView ratingTxt, float rating){
-        Log.d("rating", String.valueOf(rating));
         if(rating == 0){
             ratingTxt.setText("별점입력");
         }
@@ -268,6 +296,7 @@ public class ImageActivity extends AppCompatActivity {
 
     private void submitNewRating(float newRating){
         int index = pager.getCurrentItem();
+        String keyword = infoList.get(index).getKeyword();
         float oldRating = infoList.get(index).getRating();
         if(newRating != oldRating){                 //기존 별점과 다르면 DB에 새로 저장
             String imageName = infoList.get(index).getName();
@@ -286,7 +315,7 @@ public class ImageActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     });
-
+            docRef.collection("keywords").document(keyword).update("ratingSum", FieldValue.increment(newRating-oldRating));
         }
     }
 
