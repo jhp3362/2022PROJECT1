@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.zolp.databinding.FragmentFavorRejectViewBinding;
 
 import java.util.ArrayList;
@@ -123,7 +124,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             routeLayout.setVisibility(View.VISIBLE);
 
             if(info.imageUrl != null) {
-                Glide.with(context).load(info.imageUrl).into(imageView);
+                Glide.with(context).load(info.imageUrl).transition(DrawableTransitionOptions.withCrossFade()).into(imageView);
             }
             else{
                 Glide.with(context).load(R.drawable.nopictures).into(imageView);

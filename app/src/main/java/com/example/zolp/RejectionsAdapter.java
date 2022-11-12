@@ -1,7 +1,6 @@
 package com.example.zolp;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,11 +10,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.zolp.databinding.FragmentFavorRejectViewBinding;
-import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 
@@ -108,7 +106,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
             phoneNumber.setText(info.phoneNumber);
 
             if(info.imageUrl != null) {
-                Glide.with(context).load(info.imageUrl).into(imageView);
+                Glide.with(context).load(info.imageUrl).transition(DrawableTransitionOptions.withCrossFade()).into(imageView);
             }
             else{
                 Glide.with(context).load(R.drawable.nopictures).into(imageView);

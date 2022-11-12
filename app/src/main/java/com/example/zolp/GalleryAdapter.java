@@ -13,6 +13,7 @@ import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.zolp.databinding.GalleryItemBinding;
 
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             });
         }
         public void setImageView(Uri uri){
-            Glide.with(context).load(uri).into(imageView);
+            Glide.with(context).load(uri).transition(DrawableTransitionOptions.withCrossFade()).into(imageView);
         }
     }
 

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.zolp.databinding.FragmentItemViewBinding;
 
 import java.util.ArrayList;
@@ -63,6 +64,10 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
     public void deleteItem(int position){
         mValues.remove(position);
         notifyItemRemoved(position);
+    }
+
+    public void deleteItemAll(){
+        mValues.clear();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -128,7 +133,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
             isFavorites = info.isFavorites;
 
             if(info.imageUrl != null) {
-                Glide.with(context).load(info.imageUrl).into(imageView);
+                Glide.with(context).load(info.imageUrl).transition(DrawableTransitionOptions.withCrossFade()).into(imageView);
             }
             else{
                 Glide.with(context).load(R.drawable.nopictures).into(imageView);

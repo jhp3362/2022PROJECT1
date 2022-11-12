@@ -3,8 +3,70 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     tools:context=".ItemFragment">
+
+    <LinearLayout
+        android:id="@+id/options_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:background="@drawable/option_layout"
+        android:orientation="vertical"
+        android:padding="3dp"
+        android:visibility="invisible">
+
+        <LinearLayout
+            android:id="@+id/search_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="9"
+                android:orientation="vertical"
+                android:paddingEnd="15dp">
+
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="6dp" />
+
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_keyword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="6dp" />
+
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/search_btn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="@drawable/ic_search"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/dropdown_btn"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/ic_drop_down" />
+
+    </LinearLayout>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"

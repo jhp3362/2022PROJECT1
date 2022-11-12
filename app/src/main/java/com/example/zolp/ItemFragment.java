@@ -1,18 +1,18 @@
 package com.example.zolp;
 
-import android.content.ClipData;
+import android.animation.LayoutTransition;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.CompositePageTransformer;
-import androidx.viewpager2.widget.MarginPageTransformer;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ItemFragment extends Fragment {
     private String location, target;
@@ -49,23 +48,31 @@ public class ItemFragment extends Fragment {
     private RecommendViewAdapter adapter;
 
     private final ArrayList<RestaurantInfo> list = new ArrayList<RestaurantInfo>();
-    private ArrayList<String> favoritesList, rejectionsList;
+    private ArrayList<String> favoritesList, rejectionsList, locationsList, keywordsList;
+    private boolean isSearchingLocationChanged = false, isSearchingKeywordChanged = false, isSearchLayoutDown = false;
+    private LinearLayout optionsLayout, searchLayout;
+    private RecyclerView rvLocation, rvKeyword;
+    private ItemSearchOptionsAdapter locationAdapter, keywordAdapter;
+    private Button searchBtn;
+    private int searchedLocationIndex, searchedKeywordIndex;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_item, container, false);
+
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DocumentReference docRef = FirebaseFirestore.getInstance().collection("users")
                 .document(user.getUid());
         Task<QuerySnapshot> favoritesTask = docRef.collection("favorites").get();
         Task<QuerySnapshot> rejectionsTask = docRef.collection("rejections").get();
         Task<QuerySnapshot> locationsTask = docRef.collection("locations")
-                .orderBy("imageCount", Query.Direction.DESCENDING)   //가장 많이 방문한 지역 1위 가져오기
-                .limit(1)
+                .orderBy("imageCount", Query.Direction.DESCENDING)   //가장 많이 방문한 지역 1~3위 가져오기
+                .limit(3)
                 .get();
         Task<QuerySnapshot> keywordsTask = docRef.collection("keywords")
                 .orderBy("ratingSum", Query.Direction.DESCENDING)
-                .limit(1)
+                .limit(3)
                 .get();
         Tasks.whenAllSuccess(favoritesTask, rejectionsTask, locationsTask, keywordsTask).addOnSuccessListener(new OnSuccessListener<List<Object>>() {
             @Override
@@ -84,20 +91,31 @@ public class ItemFragment extends Fragment {
                     }
                 }
                 if (!q3.isEmpty()) { //데이터 존재
-                    location = q3.getDocuments().get(0).getId();
+                    locationsList = new ArrayList<>();
+                    for (DocumentSnapshot i : q3.getDocuments()) {
+                        locationsList.add(i.getId());
+                    }
+                    location = locationsList.get(0);
+                    searchedLocationIndex = 0;
                 } else {       //데이터 없으면 일단 비우기. 나중에 따로 메시지 띄울 필요
                     location = "";
                 }
                 if (!q4.isEmpty()) {
-                    target = q4.getDocuments().get(0).getId();
+                    keywordsList = new ArrayList<>();
+                    for (DocumentSnapshot i : q4.getDocuments()) {
+                        keywordsList.add(i.getId());
+                    }
+                    target = keywordsList.get(0);
+                    searchedKeywordIndex = 0;
                 } else {
                     target = "";
                 }
                 openScrappingThread();
+                initSearchOptionsLayout();
+                optionsLayout.setVisibility(View.VISIBLE);
             }
         });
 
-        View view = inflater.inflate(R.layout.fragment_item, container, false);
 
         pager = view.findViewById(R.id.view_pager);
 
@@ -175,8 +193,52 @@ public class ItemFragment extends Fragment {
         pager.setAdapter(adapter);
         pager.setOffscreenPageLimit(1);
 
+        optionsLayout = view.findViewById(R.id.options_layout);
+        searchLayout = view.findViewById(R.id.search_layout);
+
+        Button dropdownBtn = view.findViewById(R.id.dropdown_btn);
+
+        ObjectAnimator downAnimator = ObjectAnimator.ofFloat(searchLayout,"translationY",-100,0);
+        ObjectAnimator upAnimator = ObjectAnimator.ofFloat(searchLayout,"translationY",0,-400);
+        LayoutTransition layoutTransition = new LayoutTransition();
+        layoutTransition.setAnimator(LayoutTransition.APPEARING, downAnimator);
+        layoutTransition.setAnimator(LayoutTransition.DISAPPEARING, upAnimator);
+        optionsLayout.setLayoutTransition(layoutTransition);
+
+
+        dropdownBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(isSearchLayoutDown) {
+                    searchLayout.setVisibility(View.GONE);
+                    dropdownBtn.setBackgroundResource(R.drawable.ic_drop_down);
+                }
+                else{
+                    searchLayout.setVisibility(View.VISIBLE);
+                    dropdownBtn.setBackgroundResource(R.drawable.ic_drop_up);
+                }
+
+                isSearchLayoutDown = !isSearchLayoutDown;
+            }
+        });
+
+        rvLocation = view.findViewById(R.id.rv_location);
+        rvLocation.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
+        rvKeyword = view.findViewById(R.id.rv_keyword);
+        rvKeyword.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
+
+        searchBtn = view.findViewById(R.id.search_btn);
+        searchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dropdownBtn.setBackgroundResource(R.drawable.ic_drop_down);
+                searchOthers();
+            }
+        });
+
         return view;
     }
+
 
 
     private void openScrappingThread() {
@@ -258,6 +320,61 @@ public class ItemFragment extends Fragment {
         int start = rawScript.indexOf("&quot;") + "&quot;".length();
         int end = rawScript.indexOf("&quot;", start + 1);
         return rawScript.substring(start, end);
+    }
+
+    private void initSearchOptionsLayout(){
+        locationAdapter = new ItemSearchOptionsAdapter(locationsList, searchedLocationIndex);
+        locationAdapter.setOnItemClickListener(new ItemSearchOptionsAdapter.OnItemClickListener() {
+            @Override
+            public void itemClick(int position) {
+                locationAdapter.selectItem(position);
+                if(searchedLocationIndex != position){
+                    isSearchingLocationChanged = true;
+                    searchBtn.setVisibility(View.VISIBLE);
+                }
+                else {
+                    isSearchingLocationChanged = false;
+                    if(!isSearchingKeywordChanged && searchBtn.getVisibility() == View.VISIBLE){
+                        searchBtn.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
+        rvLocation.setAdapter(locationAdapter);
+
+        keywordAdapter = new ItemSearchOptionsAdapter(keywordsList, searchedKeywordIndex);
+        keywordAdapter.setOnItemClickListener(new ItemSearchOptionsAdapter.OnItemClickListener() {
+            @Override
+            public void itemClick(int position) {
+                keywordAdapter.selectItem(position);
+                if(searchedKeywordIndex != position) {
+                    isSearchingKeywordChanged = true;
+                    searchBtn.setVisibility(View.VISIBLE);
+                }
+                else {
+                    isSearchingKeywordChanged = false;
+                    if(!isSearchingLocationChanged && searchBtn.getVisibility() == View.VISIBLE){
+                        searchBtn.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
+        rvKeyword.setAdapter(keywordAdapter);
+    }
+
+    private void searchOthers(){
+        searchBtn.setVisibility(View.GONE);
+        searchLayout.setVisibility(View.GONE);
+        isSearchLayoutDown = !isSearchLayoutDown;
+
+        searchedLocationIndex = locationAdapter.getSelectedNum();
+        location = locationAdapter.getItem(searchedLocationIndex);
+        searchedKeywordIndex = keywordAdapter.getSelectedNum();
+        target = keywordAdapter.getItem(searchedKeywordIndex);
+        adapter.deleteItemAll();
+
+        openScrappingThread();
+        initSearchOptionsLayout();
     }
 
 }
