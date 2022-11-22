@@ -98,6 +98,14 @@ public class FavoritesFragment extends Fragment {
                 FirebaseFirestore.getInstance().collection("users").document(user.getUid())
                         .collection("favorites").document(id).delete();
                 adapter.deleteItem(position);
+                if(position==adapter.getItemCount() || position == adapter.getItemCount()-1) {
+                    pager.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pager.requestTransform();
+                        }
+                    });
+                }
                 if(adapter.getItemCount()==0){
                     noImageLayout.setVisibility(View.VISIBLE);
                     noFavorTxt.setText("찜 해놓은 맛집이 없어요!");

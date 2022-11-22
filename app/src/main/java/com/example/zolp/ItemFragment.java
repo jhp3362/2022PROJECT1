@@ -180,6 +180,18 @@ public class ItemFragment extends Fragment {
 
                 docRef.collection("rejections").document(info.id).set(newRejection);
                 adapter.deleteItem(position);
+                if(position==adapter.getItemCount() || position == adapter.getItemCount()-1) {
+                    pager.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pager.requestTransform();
+                        }
+                    });
+                }
+                if(adapter.getItemCount()==0){
+                    noResultTxt.setVisibility(View.VISIBLE);
+                    pager.setVisibility(View.GONE);
+                }
             }
 
             @Override
