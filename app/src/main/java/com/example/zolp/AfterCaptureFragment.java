@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -123,10 +124,18 @@ public class AfterCaptureFragment extends Fragment {
             db = FirebaseFirestore.getInstance();
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
+
+            keywordView = rootView.findViewById(R.id.keyword_view);
+            Button editBtn = rootView.findViewById(R.id.edit_btn);
+            EditText editText = rootView.findViewById(R.id.edit_txt);
+
             Button saveBtn = rootView.findViewById(R.id.okay_btn);
             saveBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(editText.getVisibility()==View.VISIBLE){
+                        translatedLabel=editText.getText().toString();
+                    }
                     //위치정보 가져오기
                     saveAtFBDB();
                     //파이어베이스 스토리지 저장
@@ -145,7 +154,18 @@ public class AfterCaptureFragment extends Fragment {
                 }
             });
             ratingBar = rootView.findViewById(R.id.rating_bar);
-            keywordView = rootView.findViewById(R.id.keyword_view);
+            editBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(editText.getVisibility()==View.GONE){
+                        editBtn.setVisibility(View.GONE);
+                        keywordView.setVisibility(View.GONE);
+                        editText.setText(keywordView.getText());
+                        editText.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+
         }
 
         return rootView;
@@ -282,11 +302,11 @@ public class AfterCaptureFragment extends Fragment {
                                     if(count2==null) {
                                         Map<String, Object> newCount = new HashMap<>();
                                         newCount.put("imageCount", 1);
-                                        newCount.put("ratingSum", rating);
+                                        newCount.put("ratingSum", rating -2.5);
                                         transaction.set(keywordRef, newCount);
                                     }
                                     else {
-                                        transaction.update(keywordRef, "imageCount", FieldValue.increment(1), "ratingSum", keywordRatingSum + rating);
+                                        transaction.update(keywordRef, "imageCount", FieldValue.increment(1), "ratingSum", keywordRatingSum + rating -2.5);
                                     }
                                     transaction.set(docRef.collection("images").document(storageImageName), image);     //DB images 폴더에 사진 정보 문서 생성
 
@@ -383,11 +403,11 @@ public class AfterCaptureFragment extends Fragment {
                 if(count==null) {
                     Map<String, Object> newCount = new HashMap<>();
                     newCount.put("imageCount", 1);
-                    newCount.put("ratingSum", rating);
+                    newCount.put("ratingSum", rating -2.5);
                     transaction.set(keywordRef, newCount);
                 }
                 else {
-                    transaction.update(keywordRef, "imageCount", FieldValue.increment(1), "ratingSum", ratingSum + rating);
+                    transaction.update(keywordRef, "imageCount", FieldValue.increment(1), "ratingSum", ratingSum + rating -2.5);
                 }
                 return null;
             }
@@ -424,7 +444,7 @@ public class AfterCaptureFragment extends Fragment {
                             @Override
                             public void onSuccess(Object translatedText) {
                                 translatedLabel = translatedText.toString();
-                                keywordView.setText("키워드 : " + translatedLabel);
+                                keywordView.setText(translatedLabel);
                             }
 
                         })
@@ -547,6 +567,5 @@ public class AfterCaptureFragment extends Fragment {
                     }
                 }
             });
-
 
 }

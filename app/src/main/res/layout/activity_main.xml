@@ -59,39 +59,39 @@
         android:layout_gravity="end"
         android:layout_marginTop="?attr/actionBarSize"
         android:orientation="vertical"
-        android:visibility="visible">
+        android:visibility="invisible">
 
         <Button
             android:id="@+id/galley_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_design_rect"
             android:text="저장된 사진"
-            android:textColor="@color/black" />
+            android:textColor="@color/black"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
         <Button
             android:id="@+id/favorites_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_design_rect"
             android:text="찜 목록 관리"
-            android:textColor="@color/black" />
+            android:textColor="@color/black"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
         <Button
             android:id="@+id/rejections_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_design_rect"
-            android:text="추천 제외 목록 관리"
-            android:textColor="@color/black" />
+            android:text="숨김 목록 관리"
+            android:textColor="@color/black"
+            style="@style/Widget.Material3.Button.TonalButton" />
 
         <Button
             android:id="@+id/logout_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_design_rect"
             android:text="로그아웃"
-            android:textColor="@color/black" />
+            android:textColor="@color/black"
+            style="@style/Widget.Material3.Button.TonalButton" />
     </LinearLayout>
 
     <include layout="@layout/content_main" />

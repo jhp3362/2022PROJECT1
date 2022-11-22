@@ -58,6 +58,8 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        main.setTransition(this);
+
         LinearLayout Camera = rootView.findViewById(R.id.button_camera);
         LinearLayout RecommendList = rootView.findViewById(R.id.button_interest);
 

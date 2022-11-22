@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/background"
     tools:context=".ImageActivity">
 
@@ -64,7 +65,68 @@
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent" >
+
+    </androidx.viewpager2.widget.ViewPager2>
+
+    <LinearLayout
+        android:id="@+id/info_layout"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="100dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:background="@drawable/button_design_rect"
+        android:visibility="invisible"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="키워드 | " />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="위치 | " />
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="촬영일자 | " />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/keyword_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/location_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/date_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -72,32 +134,27 @@
         android:layout_gravity="bottom"
         android:orientation="horizontal"
         android:gravity="center"
-        android:padding="18dp">
+        android:padding="16dp">
 
-        <LinearLayout
-            android:id="@+id/rating_view"
+        <Button
+            android:id="@+id/rating_btn"
+            style="@style/Widget.Material3.Button.ElevatedButton.Icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#DC9F9F"
-            android:gravity="center"
-            android:padding="10dp"
-            android:orientation="horizontal">
+            android:layout_marginEnd="5dp"
+            android:padding="16dp"
+            android:textSize="24sp"
+            app:backgroundTint="#ECD6C3"
+            app:icon="@drawable/favorite"
+            app:iconTint="#FF0000" />
 
-            <RatingBar
-                style="@style/Widget.AppCompat.RatingBar.Indicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:numStars="1"
-                android:progressTint="#F44336"
-                android:rating="1" />
-
-            <TextView
-                android:id="@+id/rating_txt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:textSize="24sp" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/info_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="14dp"
+            app:icon="@drawable/information"
+            style="@style/Widget.Material3.Button.IconButton.Outlined"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -107,20 +164,23 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/delete_btn"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="40dp"
-                android:background="@drawable/delete"
-                android:padding="4dp" />
+                android:id="@+id/save_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:padding="14dp"
+                app:icon="@drawable/download"
+                app:strokeColor="?attr/colorPrimary"
+                style="@style/Widget.Material3.Button.IconButton.Outlined"/>
 
             <Button
-                android:id="@+id/save_btn"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/download"
-                android:padding="14dp" />
+                android:id="@+id/delete_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="14dp"
+                app:icon="@drawable/delete"
+                style="@style/Widget.Material3.Button.IconButton.Filled"/>
+
         </LinearLayout>
 
     </LinearLayout>

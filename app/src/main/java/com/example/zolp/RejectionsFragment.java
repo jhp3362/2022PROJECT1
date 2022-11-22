@@ -2,26 +2,18 @@ package com.example.zolp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.CompositePageTransformer;
-import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
-
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -62,7 +54,7 @@ public class RejectionsFragment extends Fragment {
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if(queryDocumentSnapshots.size()==0){
                             noImageLayout.setVisibility(View.VISIBLE);
-                            noRejectTxt.setText("차단한 식당이 없어요!");
+                            noRejectTxt.setText("숨김 처리한 식당이 없어요!");
                         }
                         else {
                             for(QueryDocumentSnapshot document : queryDocumentSnapshots){
@@ -115,7 +107,7 @@ public class RejectionsFragment extends Fragment {
                 }
                 if(adapter.getItemCount()==0){
                     noImageLayout.setVisibility(View.VISIBLE);
-                    noRejectTxt.setText("차단한 식당이 없어요!");
+                    noRejectTxt.setText("숨김 처리한 식당이 없어요!");
                 }
             }
         });
@@ -123,16 +115,13 @@ public class RejectionsFragment extends Fragment {
         pager = rootView.findViewById(R.id.pager);
         pager.setAdapter(adapter);
         pager.setOffscreenPageLimit(1);
-        /*CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-        compositePageTransformer.addTransformer(new MarginPageTransformer(60));
-        compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
+        pager.setPageTransformer(new ViewPager2.PageTransformer() {
             @Override
             public void transformPage(@NonNull View page, float position) {
                 float r = 1 - Math.abs(position);
                 page.setScaleY(0.7f + r * 0.3f);
             }
         });
-        pager.setPageTransformer(compositePageTransformer);*/
 
 
         return rootView;

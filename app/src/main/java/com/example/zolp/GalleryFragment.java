@@ -32,8 +32,10 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Objects;
 
 
@@ -80,10 +82,15 @@ public class GalleryFragment extends Fragment {
                         final int[] index = {0};
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String location = document.getString("location");
+                            if(Objects.equals(location, "null")){
+                                location = "위치정보 없음";
+                            }
                             String imageName = document.getId();
                             String keyword = document.getString("keywords");
+                            Date date = document.getDate("date");
+                            String dateStr = new SimpleDateFormat("yyyy년 MM월 dd일 HH:mm", java.util.Locale.getDefault()).format(date);
                             float rating = Objects.requireNonNull(document.getDouble("rating")).floatValue();
-                            infoList.add(new ImageInfo(location,imageName,keyword,rating));
+                            infoList.add(new ImageInfo(location,imageName,keyword,dateStr,rating));
                             FirebaseStorage.getInstance().getReference().child(user.getUid())
                                     .child(Objects.requireNonNull(imageName))  //DB에 저장된 파일명으로 storage에서 이미지 가져오기
                                     .getDownloadUrl()

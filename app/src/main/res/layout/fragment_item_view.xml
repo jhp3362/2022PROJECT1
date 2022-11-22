@@ -106,15 +106,16 @@
                     android:id="@+id/car_router"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
-                    android:text="자동차" />
+                    android:text="차량 경로" />
 
                 <Button
                     android:id="@+id/transit_router"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="대중교통" />
+                    android:text="대중교통 경로" />
             </LinearLayout>
 
         </LinearLayout>

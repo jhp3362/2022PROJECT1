@@ -9,7 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,6 +20,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.transition.platform.MaterialSharedAxis;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -55,11 +58,17 @@ public class ItemFragment extends Fragment {
     private ItemSearchOptionsAdapter locationAdapter, keywordAdapter;
     private Button searchBtn;
     private int searchedLocationIndex, searchedKeywordIndex;
+    private TextView noResultTxt;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
+
+        MaterialSharedAxis exitTransition = new MaterialSharedAxis(MaterialSharedAxis.Z, false);
+        setExitTransition(exitTransition);
+        MaterialSharedAxis reenterTransition = new MaterialSharedAxis(MaterialSharedAxis.Z, true);
+        setReenterTransition(reenterTransition);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DocumentReference docRef = FirebaseFirestore.getInstance().collection("users")
@@ -71,6 +80,7 @@ public class ItemFragment extends Fragment {
                 .limit(3)
                 .get();
         Task<QuerySnapshot> keywordsTask = docRef.collection("keywords")
+                .whereGreaterThanOrEqualTo("ratingSum", 0)
                 .orderBy("ratingSum", Query.Direction.DESCENDING)
                 .limit(3)
                 .get();
@@ -112,7 +122,6 @@ public class ItemFragment extends Fragment {
                 }
                 openScrappingThread();
                 initSearchOptionsLayout();
-                optionsLayout.setVisibility(View.VISIBLE);
             }
         });
 
@@ -192,12 +201,19 @@ public class ItemFragment extends Fragment {
 
         pager.setAdapter(adapter);
         pager.setOffscreenPageLimit(1);
+        pager.setPageTransformer(new ViewPager2.PageTransformer() {
+            @Override
+            public void transformPage(@NonNull View page, float position) {
+                float r = 1 - Math.abs(position);
+                page.setScaleY(0.7f + r * 0.3f);
+            }
+        });
 
         optionsLayout = view.findViewById(R.id.options_layout);
         searchLayout = view.findViewById(R.id.search_layout);
 
         Button dropdownBtn = view.findViewById(R.id.dropdown_btn);
-
+        dropdownBtn.bringToFront();
         ObjectAnimator downAnimator = ObjectAnimator.ofFloat(searchLayout,"translationY",-100,0);
         ObjectAnimator upAnimator = ObjectAnimator.ofFloat(searchLayout,"translationY",0,-400);
         LayoutTransition layoutTransition = new LayoutTransition();
@@ -236,6 +252,8 @@ public class ItemFragment extends Fragment {
             }
         });
 
+        noResultTxt = view.findViewById(R.id.no_result_txt);
+
         return view;
     }
 
@@ -254,7 +272,15 @@ public class ItemFragment extends Fragment {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        pager.setAdapter(adapter);      //크롤링 끝나면 viewpager 업데이트
+        if(adapter.getItemCount()!=0) {
+            noResultTxt.setVisibility(View.INVISIBLE);
+            pager.setVisibility(View.VISIBLE);
+            pager.setAdapter(adapter);      //크롤링 끝나면 viewpager 업데이트
+        }
+        else{
+            noResultTxt.setVisibility(View.VISIBLE);
+            pager.setVisibility(View.GONE);
+        }
     }
 
 
@@ -323,43 +349,47 @@ public class ItemFragment extends Fragment {
     }
 
     private void initSearchOptionsLayout(){
-        locationAdapter = new ItemSearchOptionsAdapter(locationsList, searchedLocationIndex);
-        locationAdapter.setOnItemClickListener(new ItemSearchOptionsAdapter.OnItemClickListener() {
-            @Override
-            public void itemClick(int position) {
-                locationAdapter.selectItem(position);
-                if(searchedLocationIndex != position){
-                    isSearchingLocationChanged = true;
-                    searchBtn.setVisibility(View.VISIBLE);
-                }
-                else {
-                    isSearchingLocationChanged = false;
-                    if(!isSearchingKeywordChanged && searchBtn.getVisibility() == View.VISIBLE){
-                        searchBtn.setVisibility(View.GONE);
+        if(locationsList != null || keywordsList!=null) {
+            if (locationsList != null) {
+                locationAdapter = new ItemSearchOptionsAdapter(locationsList, searchedLocationIndex);
+                locationAdapter.setOnItemClickListener(new ItemSearchOptionsAdapter.OnItemClickListener() {
+                    @Override
+                    public void itemClick(int position) {
+                        locationAdapter.selectItem(position);
+                        if (searchedLocationIndex != position) {
+                            isSearchingLocationChanged = true;
+                            searchBtn.setVisibility(View.VISIBLE);
+                        } else {
+                            isSearchingLocationChanged = false;
+                            if (!isSearchingKeywordChanged && searchBtn.getVisibility() == View.VISIBLE) {
+                                searchBtn.setVisibility(View.GONE);
+                            }
+                        }
                     }
-                }
+                });
+                rvLocation.setAdapter(locationAdapter);
             }
-        });
-        rvLocation.setAdapter(locationAdapter);
-
-        keywordAdapter = new ItemSearchOptionsAdapter(keywordsList, searchedKeywordIndex);
-        keywordAdapter.setOnItemClickListener(new ItemSearchOptionsAdapter.OnItemClickListener() {
-            @Override
-            public void itemClick(int position) {
-                keywordAdapter.selectItem(position);
-                if(searchedKeywordIndex != position) {
-                    isSearchingKeywordChanged = true;
-                    searchBtn.setVisibility(View.VISIBLE);
-                }
-                else {
-                    isSearchingKeywordChanged = false;
-                    if(!isSearchingLocationChanged && searchBtn.getVisibility() == View.VISIBLE){
-                        searchBtn.setVisibility(View.GONE);
+            if (keywordsList != null) {
+                keywordAdapter = new ItemSearchOptionsAdapter(keywordsList, searchedKeywordIndex);
+                keywordAdapter.setOnItemClickListener(new ItemSearchOptionsAdapter.OnItemClickListener() {
+                    @Override
+                    public void itemClick(int position) {
+                        keywordAdapter.selectItem(position);
+                        if (searchedKeywordIndex != position) {
+                            isSearchingKeywordChanged = true;
+                            searchBtn.setVisibility(View.VISIBLE);
+                        } else {
+                            isSearchingKeywordChanged = false;
+                            if (!isSearchingLocationChanged && searchBtn.getVisibility() == View.VISIBLE) {
+                                searchBtn.setVisibility(View.GONE);
+                            }
+                        }
                     }
-                }
+                });
+                rvKeyword.setAdapter(keywordAdapter);
             }
-        });
-        rvKeyword.setAdapter(keywordAdapter);
+            optionsLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void searchOthers(){

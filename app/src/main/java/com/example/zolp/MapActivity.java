@@ -44,6 +44,11 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -133,8 +138,28 @@ public class MapActivity extends AppCompatActivity {
                         String later = (Integer.parseInt(time.substring(0, 2)) < 6) ? "true" : "false";
                         String url = "https://way-m.map.naver.com/quick-path/" + sx + "," + sy + "," + sname +
                                 "/" + ex + "," + ey + "," + ename + "/-/" + type + "/0?departureTime=" + date + "T" + time + "&later=" + later;
-                        Log.d("aaaaaaa", url);
-                        mWebView.loadUrl(url);
+                        //mWebView.loadUrl(url);
+                        new Thread(){
+                            @Override
+                            public void run() {
+                                try {
+                                    Document doc = Jsoup.connect(url).get();
+                                    String removeBanner = "<style type=\"text/css\"media=\"screen\">.top_banner_area{display:none !important;} " +
+                                            ".bottom_banner_area{display:none !important;} .btn_navigate{display:none !important;}</style>";
+                                    Element header = doc.head();
+                                    header.append(removeBanner);
+                                    String data = doc.toString();
+                                    mWebView.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mWebView.loadDataWithBaseURL(url,data,"text/html","UTF-8",null);
+                                        }
+                                    });
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }.start();
                         fusedLocationClient.removeLocationUpdates(this);
                     }
                 };

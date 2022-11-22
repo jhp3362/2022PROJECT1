@@ -5,17 +5,20 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.transition.platform.MaterialSharedAxis;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -45,28 +48,33 @@ public class MainActivity extends AppCompatActivity {
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-        toolbar.setBackgroundColor(getResources().getColor(R.color.white));
-
-
-        downMenu = AnimationUtils.loadAnimation(this, R.anim.animation_down);
-        upMenu = AnimationUtils.loadAnimation(this, R.anim.animation_up);
-
-        upMenu.setAnimationListener(new Animation.AnimationListener() {
+        userMenu.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        int height = userMenu.getMeasuredHeight();
+        downMenu = new Animation() {
             @Override
-            public void onAnimationStart(Animation animation) {
-
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                if (interpolatedTime == 1f) {
+                    userMenu.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                }
+                else{
+                    userMenu.getLayoutParams().height = (int) (height * interpolatedTime);
+                }
+                userMenu.requestLayout();
             }
-
+        };
+        downMenu.setDuration(200);
+        upMenu = new Animation() {
             @Override
-            public void onAnimationEnd(Animation animation) {
-                userMenu.setVisibility(View.INVISIBLE);
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                if (interpolatedTime == 1f) {
+                    userMenu.setVisibility(View.INVISIBLE);
+                } else {
+                    userMenu.getLayoutParams().height = (int) (height -(height * interpolatedTime));
+                    userMenu.requestLayout();
+                }
             }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
+        };
+        upMenu.setDuration(200);
 
         userView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
                     userMenu.startAnimation(upMenu);
                 }
                 else{
+                    userMenu.getLayoutParams().height = 0;
+                    userMenu.requestLayout();
                     userMenu.setVisibility(View.VISIBLE);
                     userMenu.bringToFront();
                     userMenu.startAnimation(downMenu);
@@ -168,12 +178,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        Rect rect = new Rect(), rect2 = new Rect();
-        userMenu.getGlobalVisibleRect(rect);
-        userView.getGlobalVisibleRect(rect2);
-        rect.union(rect2);
-        if (!rect.contains((int) ev.getX(), (int) ev.getY()) && ev.getAction() == MotionEvent.ACTION_UP) {
-            if (isMenuOpened) {
+        if (isMenuOpened) {
+            Rect rect = new Rect(), rect2 = new Rect();
+            userMenu.getGlobalVisibleRect(rect);
+            userView.getGlobalVisibleRect(rect2);
+            rect.union(rect2);
+            if (!rect.contains((int) ev.getX(), (int) ev.getY()) && ev.getAction() == MotionEvent.ACTION_UP) {
                 userMenu.startAnimation(upMenu);
                 isMenuOpened = !isMenuOpened;
             }
@@ -188,4 +198,12 @@ public class MainActivity extends AppCompatActivity {
             getCurrentFocus().clearFocus();
         }
     }
+
+    public void setTransition(Fragment fragment){
+        MaterialSharedAxis exitTransition = new MaterialSharedAxis(MaterialSharedAxis.Z, true);
+        fragment.setExitTransition(exitTransition);
+        MaterialSharedAxis reenterTransition = new MaterialSharedAxis(MaterialSharedAxis.Z, false);
+        fragment.setReenterTransition(reenterTransition);
+    }
+
 }

@@ -7,12 +7,14 @@ public class ImageInfo implements Parcelable {
     private final String location;
     private final String name;
     private final String keyword;
+    private final String date;
     private float rating;
 
-    public ImageInfo( String location, String name, String keyword, float rating) {
+    public ImageInfo( String location, String name, String keyword, String date, float rating) {
         this.location = location;
         this.name = name;
         this.keyword = keyword;
+        this.date = date;
         this.rating = rating;
     }
 
@@ -20,6 +22,7 @@ public class ImageInfo implements Parcelable {
         this.location = source.readString();
         this.name = source.readString();
         this.keyword = source.readString();
+        this.date = source.readString();
         this.rating = source.readFloat();
     }
 
@@ -46,6 +49,7 @@ public class ImageInfo implements Parcelable {
         dest.writeString(location);
         dest.writeString(name);
         dest.writeString(keyword);
+        dest.writeString(date);
         dest.writeFloat(rating);
     }
 
@@ -60,6 +64,8 @@ public class ImageInfo implements Parcelable {
     public String getKeyword() {
         return keyword;
     }
+
+    public String getDate(){return date;}
 
     public float getRating() {
         return rating;

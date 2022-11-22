@@ -3,11 +3,14 @@ package com.example.zolp;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -32,7 +35,6 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -53,6 +55,8 @@ public class ImageActivity extends AppCompatActivity {
     private boolean isRemoved = false, isRatingChanged = false;
     private final ArrayList<Integer> removedIndexes = new ArrayList<>();
     private float removedRating;
+    private LinearLayout infoLayout;
+    private Button infoBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +64,7 @@ public class ImageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if(user != null){
-            makeLoginAlert();
-        }
+
         storageRef = FirebaseStorage.getInstance().getReference().child(user.getUid());
         docRef = FirebaseFirestore.getInstance().collection("users").document(user.getUid());
 
@@ -79,15 +81,41 @@ public class ImageActivity extends AppCompatActivity {
         pager.setPageTransformer(new MarginPageTransformer(40));
         pager.setTransitionName("trans"+index);
 
+        infoLayout = findViewById(R.id.info_layout);
+        infoBtn = findViewById(R.id.info_btn);
+        infoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(infoLayout.getVisibility()==View.INVISIBLE) {
+                    infoLayout.setVisibility(View.VISIBLE);
+                    Log.d("asdad","11");
+                }
+                else{
+                    infoLayout.setVisibility(View.INVISIBLE);
+                    Log.d("asdad","21");
+                }
+            }
+        });
+        TextView keywordText = findViewById(R.id.keyword_txt);
+        TextView locationText = findViewById(R.id.location_txt);
+        TextView dateText = findViewById(R.id.date_txt);
 
-        TextView ratingTxt = findViewById(R.id.rating_txt);
-        setRatingTxt(ratingTxt, infoList.get(index).getRating());   //선택 이미지에 따른 점수 표시
+        Button ratingBtn = findViewById(R.id.rating_btn);
+        ImageInfo info = infoList.get(index);
+        setRatingTxt(ratingBtn, info.getRating());   //선택 이미지에 따른 점수 표시
+        keywordText.setText(info.getKeyword());
+        locationText.setText(info.getLocation());
+        dateText.setText(info.getDate());
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {  //페이지 넘길때마다 이미지별 점수 표시
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                float rating = infoList.get(position).getRating();
-                setRatingTxt(ratingTxt, rating);
+                ImageInfo info = infoList.get(position);
+                float rating = info.getRating();
+                setRatingTxt(ratingBtn, rating);
+                keywordText.setText(info.getKeyword());
+                locationText.setText(info.getLocation());
+                dateText.setText(info.getDate());
             }
         });
 
@@ -118,10 +146,12 @@ public class ImageActivity extends AppCompatActivity {
             }
         });
 
-        LinearLayout ratingView = findViewById(R.id.rating_view);
-        ratingView.setOnClickListener(new View.OnClickListener() {      //평점 입력창 띄우기
+        ratingBtn.setOnClickListener(new View.OnClickListener() {      //평점 입력창 띄우기
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
+                if (infoLayout.getVisibility()==View.VISIBLE) {
+                    infoLayout.setVisibility(View.INVISIBLE);
+                }
                 ratingLayout.setVisibility(View.VISIBLE);
                 ratingLayout.bringToFront();
 
@@ -140,7 +170,7 @@ public class ImageActivity extends AppCompatActivity {
                 float rating = ratingBar.getRating();
                 submitNewRating(rating);
                 ratingLayout.setVisibility(View.INVISIBLE);
-                ratingTxt.setText(String.valueOf(rating));
+                ratingBtn.setText(String.valueOf(rating));
             }
         });
         TextView cancelBtn = findViewById(R.id.cancel_btn);
@@ -242,7 +272,7 @@ public class ImageActivity extends AppCompatActivity {
                                                             keywordRef.delete();
                                                         } else {
                                                             removedRating = (removedRating==0) ? 2.5F : removedRating;
-                                                            keywordRef.update("imageCount", FieldValue.increment(-1), "ratingSum", keywordRatingSum - removedRating);
+                                                            keywordRef.update("imageCount", FieldValue.increment(-1), "ratingSum", keywordRatingSum - (removedRating-2.5));
                                                         }
                                                     }
                                                 }
@@ -285,12 +315,12 @@ public class ImageActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void setRatingTxt(TextView ratingTxt, float rating){
+    private void setRatingTxt(Button button, float rating){
         if(rating == 0){
-            ratingTxt.setText("별점입력");
+            button.setText("별점입력");
         }
         else{
-            ratingTxt.setText(String.valueOf(rating));
+            button.setText(String.valueOf(rating));
         }
     }
 
@@ -304,7 +334,6 @@ public class ImageActivity extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
-                            Toast.makeText(getBaseContext(),"별점 등록 완료" ,Toast.LENGTH_SHORT).show();
                             infoList.get(index).setRating(newRating);
                             isRatingChanged = true;
                         }
@@ -315,13 +344,13 @@ public class ImageActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     });
+            if(oldRating == 0){
+                oldRating = 2.5F;
+            }
             docRef.collection("keywords").document(keyword).update("ratingSum", FieldValue.increment(newRating-oldRating));
         }
     }
 
-    private void makeLoginAlert(){
-
-    }
     @Override
     public void onBackPressed() {
         supportFinishAfterTransition();
@@ -347,5 +376,20 @@ public class ImageActivity extends AppCompatActivity {
 
 
         super.supportFinishAfterTransition();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Rect rect = new Rect(), rect2 = new Rect();
+        infoLayout.getGlobalVisibleRect(rect);
+        infoBtn.getGlobalVisibleRect(rect2);
+        rect.union(rect2);
+
+        if (!rect.contains((int) ev.getX(), (int) ev.getY()) && ev.getAction() == MotionEvent.ACTION_UP) {
+            if (infoLayout.getVisibility()==View.VISIBLE) {
+                infoLayout.setVisibility(View.INVISIBLE);
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 }

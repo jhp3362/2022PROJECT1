@@ -54,6 +54,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
+                android:layout_marginEnd="10dp"
                 android:background="@drawable/ic_search"
                 android:visibility="gone" />
 
@@ -76,5 +77,14 @@
         android:clipToPadding="false"
         android:paddingStart="20dp"
         android:paddingEnd="20dp" />
+
+    <TextView
+        android:id="@+id/no_result_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="150dp"
+        android:layout_gravity="center"
+        android:visibility="invisible"
+        android:text="추천 결과가 없습니다.." />
 
 </LinearLayout>
