@@ -44,6 +44,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ItemFragment extends Fragment {
     private String location, target;
@@ -59,6 +66,7 @@ public class ItemFragment extends Fragment {
     private Button searchBtn;
     private int searchedLocationIndex, searchedKeywordIndex;
     private TextView noResultTxt;
+    private LinearLayout loadingLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -121,7 +129,6 @@ public class ItemFragment extends Fragment {
                     target = "";
                 }
                 openScrappingThread();
-                initSearchOptionsLayout();
             }
         });
 
@@ -143,10 +150,12 @@ public class ItemFragment extends Fragment {
             public void setFavorites(Button btn, int position) {
                 RestaurantInfo info = adapter.getItem(position);
                 if (info.isFavorites) {//좋아요 취소
+                    favoritesList.remove(info.id);
                     docRef.collection("favorites").document(info.id).delete();
                     btn.setBackgroundResource(R.drawable.bookmark_before);
                     adapter.getItem(position).isFavorites = false;
                 } else { //맛집 좋아요 등록
+                    favoritesList.add(info.id);
                     Map<String, String> newFavorites = new HashMap<>();
                     newFavorites.put("id", info.id);
                     newFavorites.put("name", info.name);
@@ -168,6 +177,7 @@ public class ItemFragment extends Fragment {
             @Override
             public void rejectItem(int position) {
                 RestaurantInfo info = adapter.getItem(position);
+                rejectionsList.add(info.id);
                 Map<String, String> newRejection = new HashMap<>();
                 newRejection.put("id", info.id);
                 newRejection.put("name", info.name);
@@ -265,6 +275,7 @@ public class ItemFragment extends Fragment {
         });
 
         noResultTxt = view.findViewById(R.id.no_result_txt);
+        loadingLayout = view.findViewById(R.id.loading_layout);
 
         return view;
     }
@@ -272,27 +283,42 @@ public class ItemFragment extends Fragment {
 
 
     private void openScrappingThread() {
-        try {
-            Thread scrappingThread = new Thread() {
-                @Override
-                public void run() {
-                    getRestaurantList();
+        Observable.fromCallable(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                getRestaurantList();
+                return true;
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Boolean>() {
+            @Override
+            public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
+                loadingLayout.setVisibility(View.VISIBLE);
+                pager.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onNext(@io.reactivex.rxjava3.annotations.NonNull Boolean aBoolean) {
+
+            }
+
+            @Override
+            public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                loadingLayout.setVisibility(View.INVISIBLE);
+                if(adapter.getItemCount()!=0) {
+                    pager.setVisibility(View.VISIBLE);
+                    pager.setAdapter(adapter);      //크롤링 끝나면 viewpager 업데이트
                 }
-            };
-            scrappingThread.start();
-            scrappingThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if(adapter.getItemCount()!=0) {
-            noResultTxt.setVisibility(View.INVISIBLE);
-            pager.setVisibility(View.VISIBLE);
-            pager.setAdapter(adapter);      //크롤링 끝나면 viewpager 업데이트
-        }
-        else{
-            noResultTxt.setVisibility(View.VISIBLE);
-            pager.setVisibility(View.GONE);
-        }
+                else{
+                    noResultTxt.setVisibility(View.VISIBLE);
+                }
+                initSearchOptionsLayout();
+            }
+        });
     }
 
 
@@ -404,19 +430,63 @@ public class ItemFragment extends Fragment {
         }
     }
 
+    private void resetSearchOptionsAdapter(){
+        rvLocation.setAdapter(locationAdapter);
+        rvKeyword.setAdapter(keywordAdapter);
+        optionsLayout.setVisibility(View.VISIBLE);
+    }
+
     private void searchOthers(){
-        searchBtn.setVisibility(View.GONE);
-        searchLayout.setVisibility(View.GONE);
-        isSearchLayoutDown = !isSearchLayoutDown;
+        Observable.fromCallable(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                getRestaurantList();
+                return true;
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Boolean>() {
+            @Override
+            public void onSubscribe(@io.reactivex.rxjava3.annotations.NonNull Disposable d) {
+                if(noResultTxt.getVisibility()==View.VISIBLE){
+                    noResultTxt.setVisibility(View.INVISIBLE);
+                }
+                loadingLayout.setVisibility(View.VISIBLE);
+                pager.setVisibility(View.GONE);
 
-        searchedLocationIndex = locationAdapter.getSelectedNum();
-        location = locationAdapter.getItem(searchedLocationIndex);
-        searchedKeywordIndex = keywordAdapter.getSelectedNum();
-        target = keywordAdapter.getItem(searchedKeywordIndex);
-        adapter.deleteItemAll();
+                searchBtn.setVisibility(View.GONE);
+                searchLayout.setVisibility(View.GONE);
+                optionsLayout.setVisibility(View.INVISIBLE);
+                isSearchLayoutDown = !isSearchLayoutDown;
 
-        openScrappingThread();
-        initSearchOptionsLayout();
+                searchedLocationIndex = locationAdapter.getSelectedNum();
+                location = locationAdapter.getItem(searchedLocationIndex);
+                searchedKeywordIndex = keywordAdapter.getSelectedNum();
+                target = keywordAdapter.getItem(searchedKeywordIndex);
+                adapter.deleteItemAll();
+            }
+
+            @Override
+            public void onNext(@io.reactivex.rxjava3.annotations.NonNull Boolean aBoolean) {
+
+            }
+
+            @Override
+            public void onError(@io.reactivex.rxjava3.annotations.NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+                loadingLayout.setVisibility(View.INVISIBLE);
+                if(adapter.getItemCount()!=0) {
+                    pager.setVisibility(View.VISIBLE);
+                    pager.setAdapter(adapter);      //크롤링 끝나면 viewpager 업데이트
+                }
+                else{
+                    noResultTxt.setVisibility(View.VISIBLE);
+                }
+                resetSearchOptionsAdapter();
+            }
+        });
     }
 
 }
