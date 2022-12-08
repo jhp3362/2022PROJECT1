@@ -38,7 +38,7 @@ public class ItemSearchOptionsAdapter  extends RecyclerView.Adapter<ItemSearchOp
         holder.textView.setText(list.get(position));
         if(position==selectedNum){
             holder.textView.setBackgroundResource(R.drawable.location_and_keyword_selected_box);
-            holder.textView.setTextColor(Color.parseColor("#000000"));
+            holder.textView.setTextColor(Color.parseColor("#FFFFFF"));
         }
         else{
             holder.textView.setBackgroundResource(R.drawable.location_and_keyword_box);

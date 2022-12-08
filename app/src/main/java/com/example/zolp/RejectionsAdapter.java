@@ -72,6 +72,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
         public final TextView keywords;
         public final TextView location;
         public final TextView phoneNumber;
+        public final TextView visitorRating;
         public final ImageView imageView;
         public final Button button, delete;
 
@@ -81,6 +82,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
             keywords = binding.keywords;
             location = binding.location;
             phoneNumber = binding.phoneNumber;
+            visitorRating = binding.visitorRating;
             imageView = binding.image;
             button = binding.button;
             delete = binding.delete;
@@ -104,6 +106,7 @@ public class RejectionsAdapter extends RecyclerView.Adapter<RejectionsAdapter.Vi
             keywords.setText(info.keyword);
             location.setText(info.location);
             phoneNumber.setText(info.phoneNumber);
+            visitorRating.setText(info.visitorRating);
 
             if(info.imageUrl != null) {
                 Glide.with(context).load(info.imageUrl).transition(DrawableTransitionOptions.withCrossFade()).into(imageView);

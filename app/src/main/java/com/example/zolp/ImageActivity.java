@@ -88,11 +88,9 @@ public class ImageActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(infoLayout.getVisibility()==View.INVISIBLE) {
                     infoLayout.setVisibility(View.VISIBLE);
-                    Log.d("asdad","11");
                 }
                 else{
                     infoLayout.setVisibility(View.INVISIBLE);
-                    Log.d("asdad","21");
                 }
             }
         });

@@ -89,6 +89,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="추천 결과가 없습니다.."
+        android:textSize="18sp"
         android:visibility="invisible" />
 
     <LinearLayout
@@ -109,6 +110,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="3dp"
+            android:textSize="18sp"
             android:text="로딩 중입니다. 잠시만 기다려주세요." />
     </LinearLayout>
 </FrameLayout>

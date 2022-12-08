@@ -63,9 +63,10 @@ public class RejectionsFragment extends Fragment {
                                 String imageUrl = document.getString("imageUrl");
                                 String location = document.getString("location");
                                 String phoneNumber = document.getString("phoneNumber");
+                                String visitorRating = document.getString("visitorRating");
                                 String webUrl = document.getString("webUrl");
                                 String keyword = document.getString("keyword");
-                                RestaurantInfo info = new RestaurantInfo(id, name, imageUrl, location, "","",phoneNumber,webUrl,keyword,false);
+                                RestaurantInfo info = new RestaurantInfo(id, name, imageUrl, location, "","",phoneNumber,visitorRating,webUrl,keyword,false);
                                 adapter.addItem(info);
                             }
                             pager.setAdapter(adapter);

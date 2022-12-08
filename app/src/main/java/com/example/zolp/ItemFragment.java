@@ -4,6 +4,7 @@ import android.animation.LayoutTransition;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -155,6 +156,9 @@ public class ItemFragment extends Fragment {
                     btn.setBackgroundResource(R.drawable.bookmark_before);
                     adapter.getItem(position).isFavorites = false;
                 } else { //맛집 좋아요 등록
+                    if(favoritesList == null){
+                        favoritesList = new ArrayList<>();
+                    }
                     favoritesList.add(info.id);
                     Map<String, String> newFavorites = new HashMap<>();
                     newFavorites.put("id", info.id);
@@ -164,6 +168,7 @@ public class ItemFragment extends Fragment {
                     newFavorites.put("x", info.x);
                     newFavorites.put("y", info.y);
                     newFavorites.put("phoneNumber", info.phoneNumber);
+                    newFavorites.put("visitorRating", info.visitorRating);
                     newFavorites.put("webUrl", info.webUrl);
                     newFavorites.put("keyword", info.keyword);
                     newFavorites.put("date", new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault()).format(new Date()));
@@ -177,6 +182,9 @@ public class ItemFragment extends Fragment {
             @Override
             public void rejectItem(int position) {
                 RestaurantInfo info = adapter.getItem(position);
+                if(rejectionsList == null){
+                    rejectionsList = new ArrayList<>();
+                }
                 rejectionsList.add(info.id);
                 Map<String, String> newRejection = new HashMap<>();
                 newRejection.put("id", info.id);
@@ -184,6 +192,7 @@ public class ItemFragment extends Fragment {
                 newRejection.put("imageUrl", info.imageUrl);
                 newRejection.put("location", info.location);
                 newRejection.put("phoneNumber", info.phoneNumber);
+                newRejection.put("visitorRating", info.visitorRating);
                 newRejection.put("webUrl", info.webUrl);
                 newRejection.put("keyword", info.keyword);
                 newRejection.put("date", new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault()).format(new Date()));
@@ -370,7 +379,7 @@ public class ItemFragment extends Fragment {
                 String visitorReviewScore = (String) value.get("visitorReviewScore");
                 Boolean isFavorites = (Boolean) value.get("favorites");
                 //list 대신 adapter로 직접 정보 전달
-                adapter.addItem(new RestaurantInfo(id, name, imageUrl, address, x, y, phone, routeUrl, target, isFavorites));
+                adapter.addItem(new RestaurantInfo(id, name, imageUrl, address, x, y, phone, visitorReviewScore, routeUrl, target, isFavorites));
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();

@@ -64,9 +64,10 @@ public class FavoritesFragment extends Fragment {
                                 String x = document.getString("x");
                                 String y = document.getString("y");
                                 String phoneNumber = document.getString("phoneNumber");
+                                String visitorRating = document.getString("visitorRating");
                                 String webUrl = document.getString("webUrl");
                                 String keyword = document.getString("keyword");
-                                RestaurantInfo info = new RestaurantInfo(id, name, imageUrl, location, x, y,phoneNumber,webUrl,keyword,false);
+                                RestaurantInfo info = new RestaurantInfo(id, name, imageUrl, location, x, y,phoneNumber,visitorRating,webUrl,keyword,false);
                                 adapter.addItem(info);
                             }
                             pager.setAdapter(adapter);

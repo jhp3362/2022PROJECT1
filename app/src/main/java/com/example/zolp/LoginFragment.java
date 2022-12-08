@@ -78,6 +78,7 @@ public class LoginFragment extends Fragment {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
+                    main.getSupportFragmentManager().popBackStack();
                     main.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_content_main, new MainFragment()).commit();
                 }
                 else{

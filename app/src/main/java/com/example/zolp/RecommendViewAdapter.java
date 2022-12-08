@@ -75,6 +75,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
         public final TextView keyword;
         public final TextView location;
         public final TextView phoneNumber;
+        public final TextView visitorRating;
         public final ImageView imageView;
         public final Button button, favorites, rejection, carRouter, transitRouter;
         public Boolean isFavorites;
@@ -86,6 +87,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
             keyword = binding.keyword;
             location = binding.location;
             phoneNumber = binding.phoneNumber;
+            visitorRating = binding.visitorRating;
             imageView = binding.image;
             button = binding.button;
 
@@ -130,6 +132,7 @@ public class RecommendViewAdapter extends RecyclerView.Adapter<RecommendViewAdap
             keyword.setText(info.keyword);
             location.setText(info.location);
             phoneNumber.setText(info.phoneNumber);
+            visitorRating.setText(info.visitorRating);
             isFavorites = info.isFavorites;
 
             if(info.imageUrl != null) {

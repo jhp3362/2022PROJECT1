@@ -73,6 +73,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
         public final TextView keywords;
         public final TextView location;
         public final TextView phoneNumber;
+        public final TextView visitorRating;
         public final ImageView imageView;
         public final Button button, delete, transitRouter, carRouter;
         public LinearLayout routeLayout;
@@ -83,6 +84,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             keywords = binding.keywords;
             location = binding.location;
             phoneNumber = binding.phoneNumber;
+            visitorRating = binding.visitorRating;
             imageView = binding.image;
             button = binding.button;
             delete = binding.delete;
@@ -121,6 +123,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.View
             keywords.setText(info.keyword);
             location.setText(info.location);
             phoneNumber.setText(info.phoneNumber);
+            visitorRating.setText(info.visitorRating);
             routeLayout.setVisibility(View.VISIBLE);
 
             if(info.imageUrl != null) {
